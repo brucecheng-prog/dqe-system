@@ -453,10 +453,10 @@ const em=health==='red'?'🔴':health==='yellow'?'🟡':'🟢';
 const barCol=health==='red'?'#ef4444':health==='yellow'?'#f59e0b':'#22c55e';
 h+=`<div class="hc" style="background:${bg};border-color:${bc}" onclick="selP('${p.id}')"><div class="hr"><span class="hn">${em} ${E(p.name)}</span><span class="hp" style="background:${barCol}20;color:${barCol}">${ds.pct}%</span></div><div class="hm"><span>${E(p.category)}</span>${red>0?`<span style="color:var(--d)">🔴${red}</span>`:''}${yel>0?`<span style="color:var(--w)">🟡${yel}</span>`:''}${maxDelay>0?`<span style="color:var(--d)">延误${maxDelay}天</span>`:''}</div><div class="hbar"><div class="hf" style="width:${ds.pct}%;background:${barCol}"></div></div></div>`})}
 // 阶段耗时分析
-const ap=p;if(ap){const phases=getPhases(p);
+const gp=projects.find(pr=>pr.id===ap);if(gp){const phases=getPhases(gp);
 h+=`<div class="sh-row" style="margin-top:16px"><h3>📈 阶段耗时分析</h3></div><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
 <tr style="background:var(--p);color:#fff"><th style="padding:8px;text-align:left">阶段</th><th style="padding:8px">计划</th><th style="padding:8px">实际</th><th style="padding:8px">偏差</th><th style="padding:8px">状态</th></tr>`;
-Object.entries(PC).forEach(([pk,ph])=>{const g=gt(p,pk);let actual='-',diff=0,status='-';if(g.completed_at&&g.started_at){actual=dayjs(g.completed_at).diff(dayjs(g.started_at),'day');diff=actual-ph.d;status=diff<=0?'✅ 提前':'⏰ 延期'}else{g.started_at?status='🔄 进行中':'🔄 未开始'}
+Object.entries(PC).forEach(([pk,ph])=>{const g=gt(gp,pk);let actual='-',diff=0,status='-';if(g.completed_at&&g.started_at){actual=dayjs(g.completed_at).diff(dayjs(g.started_at),'day');diff=actual-ph.d;status=diff<=0?'✅ 提前':'⏰ 延期'}else{g.started_at?status='🔄 进行中':'🔄 未开始'}
 h+=`<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="opd('${pk}')"><td style="padding:8px;font-weight:500">${ph.n}</td><td style="padding:8px;text-align:center">${ph.d}天</td><td style="padding:8px;text-align:center">${actual==='-'?'-':actual+'天'}</td><td style="padding:8px;text-align:center;color:${diff>0?'var(--d)':diff<0?'var(--g)':''}">${diff||'-'}</td><td style="padding:8px;text-align:center">${status}</td></tr>`});
 h+=`</table></div>`}
 ca.innerHTML=h}
