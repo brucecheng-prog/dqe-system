@@ -1,0 +1,1 @@
+ALTER TABLE checklist_items ADD COLUMN IF NOT EXISTS task_role TEXT DEFAULT 'DQE';

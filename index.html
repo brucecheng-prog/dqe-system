@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DQE 个人工作站</title>
+<style>
+:root{
+  --bg:#f5f6f8;--s:#ffffff;--b:#e8eaef;--b2:#dde0e5;--t:#1a1d23;--t2:#5f6670;--t3:#9499a3;
+  --p:#4f6ef6;--ph:#3d5be5;--g:#22c55e;--gh:#16a34a;--w:#f59e0b;--wh:#d97706;--d:#ef4444;--dh:#dc2626;--pp:#8b5cf6;
+  --r:10px;--rr:14px;--shadow:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.03);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.04);
+  --trans:0.2s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0f1117;--s:#1a1d27;--b:#2a2d37;--b2:#3a3d47;--t:#e8eaef;--t2:#9499a3;--t3:#5f6670;
+  --shadow:0 1px 3px rgba(0,0,0,.2);--shadow-md:0 4px 12px rgba(0,0,0,.3);
+}
+[data-theme="dark"] .card,[data-theme="dark"] .ti,[data-theme="dark"] .wi,[data-theme="dark"] .pcard,[data-theme="dark"] .hc{background:var(--s)}
+[data-theme="dark"] .ti:hover{border-color:var(--p)}
+[data-theme="dark"] .sb-i:hover{background:#252832}
+[data-theme="dark"] .sb-i.ac{background:#1a2040}
+[data-theme="dark"] .btn-s{background:#252832;color:var(--t2)}
+[data-theme="dark"] .btn-s:hover{background:#2a2d37}
+[data-theme="dark"] .qb{background:var(--s)}
+[data-theme="dark"] .ts{background:var(--s)}
+[data-theme="dark"] .dp{background:var(--s)}
+[data-theme="dark"] .fg input,[data-theme="dark"] .fg select{background:#252832;color:var(--t);border-color:var(--b)}
+[data-theme="dark"] .toast{background:#e8eaef;color:#1a1d23}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);display:flex;height:100vh;overflow:hidden;font-size:13px;line-height:1.5}
+/* Sidebar */
+.sb{width:230px;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;z-index:20}
+.sb-h{padding:14px 14px 10px;border-bottom:1px solid var(--b)}
+.sb-h h2{font-size:14px;font-weight:700;color:var(--t);letter-spacing:-0.3px}
+.sb-h p{font-size:10px;color:var(--t2);margin-top:1px}
+.sb-l{flex:1;overflow-y:auto;padding:6px 8px}
+.sb-i{padding:9px 10px;border-radius:7px;cursor:pointer;margin-bottom:2px;display:flex;align-items:center;gap:8px;font-size:12px;transition:var(--trans);color:var(--t2)}
+.sb-i:hover{background:#f2f3f7;color:var(--t)}
+.sb-i.ac{background:#eef1fe;color:var(--p);font-weight:600}
+.sb-i .av{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--bg);color:var(--t2);flex-shrink:0;transition:var(--trans)}
+.sb-i.ac .av{background:var(--p);color:#fff}
+.sb-i .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-i .st{font-size:9px;color:var(--t3)}
+.sb-del{display:none;background:none;border:none;color:var(--t3);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;flex-shrink:0}
+.sb-i:hover .sb-del{display:block}
+.sb-del:hover{color:var(--d);background:#fef2f2}
+.sb-a{padding:8px 10px;border-top:1px solid var(--b);display:flex;gap:5px}
+/* Quick Bar */
+.qb{position:sticky;top:0;z-index:15;background:var(--s);border-bottom:1px solid var(--b);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qb .br{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.qb .br span{cursor:pointer;transition:var(--trans)}.qb .br span:hover{color:var(--p)}
+.qb .br .sep{color:var(--b2);pointer-events:none}
+.qb .qbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;border:1px solid var(--b);background:var(--s);font-size:11px;color:var(--t2);cursor:pointer;transition:var(--trans);white-space:nowrap;font-family:inherit}
+.qb .qbtn:hover{border-color:var(--p);color:var(--p);background:#f8f9ff}
+.qb .qbtn.act{background:var(--p);color:#fff;border-color:var(--p)}
+.qb .qsep{width:1px;height:20px;background:var(--b);margin:0 2px}
+.qb select.qbtn{appearance:none;padding-right:24px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23949a9f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center}
+/* Main */
+.mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.mn-c{flex:1;overflow-y:auto;padding:16px 20px}
+/* Tabs */
+.ts{display:flex;background:var(--s);border-bottom:1px solid var(--b);padding:0 14px;gap:2px}
+.tb{padding:10px 14px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--t2);transition:var(--trans);white-space:nowrap;font-weight:500;display:flex;align-items:center;gap:6px}
+.tb:hover{color:var(--t)}
+.tb.ac{border-bottom-color:var(--p);color:var(--p);font-weight:600}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:none;font-size:11px;font-weight:500;cursor:pointer;transition:var(--trans);font-family:inherit;letter-spacing:0.1px}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--ph);transform:translateY(-1px);box-shadow:0 2px 6px rgba(79,110,246,.25)}
+.btn-s{background:var(--bg);color:var(--t2)}.btn-s:hover{background:#e8eaef;color:var(--t)}
+.btn-d{background:var(--d);color:#fff}.btn-d:hover{background:var(--dh)}
+.btn-o{background:#fff8eb;color:#b45309;border:1px solid #fde3b8}.btn-o:hover{background:#fef3c7}
+.btn-xs{padding:4px 7px;font-size:10px;border-radius:5px}
+.btn:active{transform:scale(.97)}
+.btn-ghost{background:transparent;border:1px solid var(--b);color:var(--t2)}.btn-ghost:hover{border-color:var(--p);color:var(--p)}
+/* Cards */
+.card{background:var(--s);border-radius:var(--rr);padding:16px;border:1px solid var(--b);transition:var(--trans)}
+.card:hover{box-shadow:var(--shadow-md)}
+.card-h{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.card-v{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.card-s{font-size:11px;color:var(--t2);margin-top:2px}
+.grid{display:grid;gap:12px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-2{grid-template-columns:1fr 1fr}
+/* Health card */
+.hc{padding:14px;border-radius:var(--rr);cursor:pointer;transition:var(--trans);border:1px solid var(--b);margin-bottom:8px}
+.hc:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.hc .hr{display:flex;align-items:center;gap:10px}
+.hc .hn{font-size:13px;font-weight:600;flex:1}
+.hc .hp{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
+.hc .hm{display:flex;gap:14px;margin-top:6px;font-size:11px;color:var(--t2)}
+.hc .hbar{height:4px;background:#e8eaef;border-radius:2px;overflow:hidden;margin-top:6px}
+.hc .hbar .hf{height:100%;border-radius:2px;transition:width .4s ease}
+/* Progress ring */
+.ring{position:relative;width:48px;height:48px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring .rt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+/* Phase card */
+.pcard{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--r);background:var(--s);border:1px solid var(--b);cursor:pointer;transition:var(--trans);margin-bottom:6px}
+.pcard:hover{background:#f8f9ff;border-color:#d4dafe}
+.pcard .pd{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.pcard .pi{flex:1;min-width:0}.pcard .pn{font-size:12px;font-weight:600}.pcard .ps{font-size:10px;color:var(--t2)}
+.pcard .pp{font-size:11px;font-weight:600;flex-shrink:0}
+/* Task item */
+.ti{padding:10px 12px;border-radius:8px;border:1px solid var(--b);background:var(--s);margin-bottom:5px;font-size:12px;cursor:pointer;transition:var(--trans);display:flex;align-items:center;gap:8px}
+.ti:hover{border-color:#c4ccfb}
+.ti.urgent{border-left:3px solid var(--d)}
+.ti .chk{width:16px;height:16px;border-radius:50%;border:2px solid var(--b2);flex-shrink:0;cursor:pointer;transition:var(--trans);display:flex;align-items:center;justify-content:center}
+.ti .chk.done{background:var(--g);border-color:var(--g)}
+.ti .chk.done::after{content:'✓';color:#fff;font-size:9px;font-weight:700}
+.ti .tnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ti .tph{font-size:10px;color:var(--t3)}
+.ti .tact{display:flex;gap:3px;flex-shrink:0}
+/* Risk dot */
+.rd{width:8px;height:8px;border-radius:50%;flex-shrink:0;cursor:pointer;transition:var(--trans)}
+.rd.r{background:var(--d);box-shadow:0 0 6px rgba(239,68,68,.3)}
+.rd.y{background:var(--w);box-shadow:0 0 6px rgba(245,158,11,.3)}
+.rd.g{background:var(--g);box-shadow:0 0 6px rgba(34,197,94,.3)}
+/* Tags */
+.tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap;letter-spacing:0.2px}
+.tag-rp{background:#eef1fe;color:var(--p)}.tag-tc{background:#fef8ed;color:#b45309}
+.tag-tt{background:#ecfdf5;color:#0f766e}.tag-tr{background:#f3f0ff;color:var(--pp)}
+/* Mini Gantt */
+.mg{padding:8px 0}
+.mg-r{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:11px}
+.mg-l{width:100px;font-size:10px;color:var(--t2);text-align:right;flex-shrink:0}
+.mg-b{flex:1;height:16px;background:#e8eaef;border-radius:4px;overflow:hidden;position:relative}
+.mg-f{height:100%;border-radius:4px;position:absolute;transition:width .4s}
+.mg-t{position:absolute;top:50%;left:0;transform:translateY(-50%);width:1px;height:22px;background:var(--d);z-index:1}
+/* Detail panel */
+.dp{position:fixed;right:0;top:0;bottom:0;width:520px;background:var(--s);border-left:1px solid var(--b);z-index:100;transform:translateX(105%);transition:.25s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.06)}
+.dp.open{transform:translateX(0)}
+.do{position:fixed;inset:0;background:rgba(0,0,0,.12);z-index:99;opacity:0;pointer-events:none;transition:.2s}
+.do.show{opacity:1;pointer-events:all}
+.dh{padding:14px 16px;border-bottom:1px solid var(--b);display:flex;align-items:flex-start;justify-content:space-between}
+.db{flex:1;overflow-y:auto;padding:14px 16px}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:0.5px}
+.b1{background:#eef1fe;color:var(--p)}.b2{background:#ecfdf5;color:#0f766e}
+.b3{background:#fef8ed;color:#d97706}.b4{background:#fef2f2;color:var(--d)}
+.b5{background:#f3f0ff;color:var(--pp)}
+/* Sections */
+.sec{margin-bottom:16px}.stitle{font-size:11px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;letter-spacing:0.3px}
+.stitle::before{content:'';width:3px;height:12px;border-radius:2px;background:var(--p)}
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1d23;color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast.success{background:#065f46}
+.toast.error{background:#991b1b}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.15);z-index:150;display:none;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modc{background:var(--s);border-radius:var(--rr);padding:20px;width:440px;max-width:92vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.12)}
+.modc h4{font-size:14px;font-weight:700;margin-bottom:12px;letter-spacing:-0.2px}
+.fg{margin-bottom:10px}.fg label{display:block;font-size:10px;color:var(--t2);margin-bottom:4px;font-weight:500}
+.fg input,.fg select{width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;outline:none;transition:var(--trans);background:var(--s)}
+.fg input:focus,.fg select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(79,110,246,.1)}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+/* Report */
+.report-view{font-size:12px;line-height:1.8}.report-view table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px}
+.report-view th{background:var(--p);color:#fff;padding:6px 10px;text-align:left;font-weight:600}
+.report-view td{padding:5px 10px;border-bottom:1px solid var(--b)}
+.report-view tr:nth-child(even) td{background:#f8f9fc}
+.empty{text-align:center;padding:40px 20px;color:var(--t2)}
+.empty h3{font-size:13px;margin-bottom:4px;color:var(--t)}
+.phase-goal{font-size:11px;color:var(--t2);padding:8px 12px;background:#f8f9ff;border-radius:8px;margin-bottom:12px;border-left:3px solid var(--p)}
+/* Upload progress */
+.upload-bar{width:100%;height:4px;background:var(--b);border-radius:2px;overflow:hidden;margin-top:6px;display:none}
+.upload-bar .uf{height:100%;background:var(--p);border-radius:2px;width:0%;transition:width .3s}
+/* Section header + fold */
+.sh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sh-row h3{font-size:15px;font-weight:700;letter-spacing:-0.3px}
+.sh-row.foldable{cursor:pointer;user-select:none}
+.sh-row.foldable h3::after{content:' ▾';font-size:11px;transition:transform .2s;display:inline-block}
+.sh-row.foldable.collapsed h3::after{transform:rotate(-90deg)}
+.fold-body{overflow:hidden;transition:max-height .4s ease,opacity .3s ease;max-height:3000px}
+.fold-body.collapsed{max-height:0;opacity:0;margin-bottom:0;pointer-events:none}
+/* Waiting list item */
+.wi{padding:12px;border-radius:var(--r);background:var(--s);border:1px solid #fde3b8;margin-bottom:6px;font-size:12px;display:flex;align-items:center;gap:10px}
+.wi .wd{font-size:10px;color:#b45309}
+/* Empty state section */
+.sec-empty{padding:24px;text-align:center;color:var(--t3);font-size:12px;border:1px dashed var(--b);border-radius:var(--r)}
+/* Responsive */
+@media(max-width:768px){
+  .sb{display:none}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+  .dp{width:100%}
+  .qb{flex-wrap:wrap;gap:4px}
+  .mn-c{padding:10px 12px}
+}
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fadeIn{animation:fadeIn .25s ease}
+.slideIn{animation:slideIn .25s ease}
+.mn-c>*{animation:fadeIn .2s ease}
+</style></head>
+<body>
+
+<!-- Sidebar -->
+<div class="sb" id="sidebar">
+<div class="sb-h"><h2>DQE 个人工作站</h2><p id="pc">0 项目</p></div>
+<div class="sb-l" id="plist"></div>
+<div class="sb-a"><button class="btn btn-p" onclick="showModal()" style="flex:1;justify-content:center">+ 新建</button><button class="btn btn-s" onclick="switchTab(3)" style="flex:none">📐 流程</button><button class="btn btn-ghost btn-xs" onclick="exp()">💾</button></div></div>
+
+<!-- Main -->
+<div class="mn">
+<!-- Tabs -->
+<div class="ts">
+<div class="tb ac" id="tab0" onclick="switchTab(0)">🏠 首页</div>
+<div class="tb" id="tab1" onclick="switchTab(1)">🏥 健康度</div>
+<div class="tb" id="tab2" onclick="switchTab(2)">⏳ 等待</div>
+<div class="tb" id="tab3" onclick="switchTab(3)">📐 流程</div>
+<div class="tb" id="tab4" onclick="switchTab(4)">🗂 主数据</div>
+<div class="tb" id="tab5" onclick="switchTab(5)">🛡️ 风控</div>
+<span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:10px;padding:0 10px;cursor:pointer" onclick="showAll=!showAll;renderTab()"><input type="checkbox" id="showAllCB" style="cursor:pointer;accent-color:var(--p)" onchange="showAll=this.checked;renderTab()"> 全部角色</span>
+<span style="font-size:14px;cursor:pointer;padding:4px" id="themeBtn" onclick="toggleTheme()" title="切换深色/浅色">🌙</span>
+</div>
+
+<!-- Quick Bar -->
+<div class="qb" id="quickBar">
+<div class="br" id="breadcrumb"><span onclick="switchTab(0)">🏠 首页</span></div>
+<div class="qsep"></div>
+<select class="qbtn" id="quickProj" onchange="jumpProj(this.value)"><option value="">📂 我的项目</option></select>
+<button class="qbtn" onclick="jumpToday()">📋 今日任务</button>
+<button class="qbtn" onclick="switchTab(2)">⏳ 等待处理</button>
+<input type="text" id="globalSearch" placeholder="🔍 搜索项目/任务/规则..." style="border:1px solid var(--b);border-radius:6px;padding:5px 10px;font-size:11px;font-family:inherit;outline:none;width:180px;background:var(--s);color:var(--t);transition:var(--trans)" onfocus="this.style.width='260px'" onblur="this.style.width='180px';setTimeout(()=>document.getElementById('searchDrop').style.display='none',200)" oninput="showSearchResults(this.value)">
+<div style="position:absolute;top:100%;background:var(--s);border:1px solid var(--b);border-radius:8px;box-shadow:var(--shadow-md);display:none;z-index:30;max-height:300px;overflow-y:auto;width:300px;margin-top:4px" id="searchDrop"></div>
+<button class="qbtn btn-p" onclick="showModal()" style="margin-left:auto">+ 新建</button>
+</div>
+
+<!-- Content -->
+<div class="mn-c" id="content"><div class="empty"><h3>选择或新建项目</h3><p>左侧项目列表或点击 + 新建 开始</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button></div></div>
+</div>
+
+<!-- Detail Panel -->
+<div class="dp" id="detail"><div class="dh"><div><span class="badge" id="dpb"></span><h4 style="margin-top:4px;font-size:13px;font-weight:700" id="dt"></h4></div><button onclick="closeDetail()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--b);background:var(--s);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button></div><div class="db" id="detailBody"></div></div>
+<div class="do" id="doverlay" onclick="closeDetail()"></div>
+
+<!-- Modals -->
+<div class="modal" id="modal"><div class="modc"><h4>新建项目</h4>
+<div class="fg"><label>选择项目编号</label><select id="pmaster" onchange="onMasterSelect()"><option value="">-- 选择已有项目 --</option></select> <button class="btn btn-xs btn-ghost" style="margin-top:4px" onclick="document.getElementById('pmaster').value='';document.getElementById('pname').value='';document.getElementById('pdate').value=dayjs().format('YYYY-MM-DD');document.getElementById('psup').value='';T('已切换到手动输入模式')">✎ 手动输入</button></div>
+<div class="fg"><label>项目名称</label><input id="pname" placeholder="例如：智能插座 DQE-001"></div>
+<div class="fg"><label>项目类型</label><select id="ptype" onchange="onTypeChange()"><option value="消费电子">消费电子</option><option value="无线产品">无线产品</option><option value="智能穿戴">智能穿戴</option><option value="小家电">小家电</option><option value="家居">家居</option><option value="自定义">自定义</option></select></div>
+<div class="fg"><label>供应商</label><input id="psup" placeholder="供应商名称"></div>
+<div class="fg"><label>启动日期</label><input type="date" id="pdate"></div>
+<div class="ma"><button class="btn btn-s" onclick="hideModal()">取消</button><button class="btn btn-p" onclick="create()">创建项目</button></div></div></div>
+
+<div class="modal" id="riskModal"><div class="modc"><h4>风险标记</h4>
+<div class="fg"><label>状态</label><select id="riskStat"><option value="green">🟢 正常</option><option value="yellow">🟡 有风险</option><option value="red">🔴 严重</option></select></div>
+<div class="fg"><label>说明</label><input id="riskNote" placeholder="风险原因..."></div>
+<div class="ma"><button class="btn btn-s" onclick="document.getElementById('riskModal').classList.remove('show')">取消</button><button class="btn btn-p" onclick="saveRisk()">保存</button></div></div></div>
+
+<div class="modal" id="waitModal"><div class="modc"><h4>标记等待</h4>
+<div class="fg"><label>等待谁</label><input id="waitFor" placeholder="例如：供应商"></div><div class="fg"><label>等待什么</label><input id="waitWhat" placeholder="例如：提供ROHS报告"></div>
+<div class="ma"><button class="btn btn-s" onclick="document.getElementById('waitModal').classList.remove('show')">取消</button><button class="btn btn-p" onclick="saveWait()">确认</button></div></div></div>
+
+<div class="modal" id="batchModal"><div class="modc"><h4>批量操作 (已选 <span id="batchCount">0</span> 项)</h4>
+<button class="btn btn-s" onclick="batchAction('complete')" style="width:100%;margin-bottom:6px">✅ 标记为完成</button>
+<button class="btn btn-s" onclick="batchAction('wait')" style="width:100%;margin-bottom:6px">⏳ 标记为等待中</button>
+<button class="btn btn-s" onclick="batchAction('download')" style="width:100%;margin-bottom:6px">📥 下载选中报告</button>
+<div class="ma"><button class="btn btn-s" onclick="document.getElementById('batchModal').classList.remove('show')">关闭</button></div></div></div>
+
+<div class="modal" id="reportModal"><div class="modc" style="width:700px;max-width:95vw"><h4 id="rpTitle">阶段评审报告</h4><div id="rpContent" class="report-view"></div>
+<div class="ma"><button class="btn btn-s" onclick="window.print()">🖨 打印/PDF</button><button class="btn btn-s" onclick="document.getElementById('reportModal').classList.remove('show')">关闭</button></div></div></div>
+
+<div class="modal" id="masterModal"><div class="modc"><h4>编辑项目主数据</h4>
+<input type="hidden" id="mId">
+<div class="fg"><label>项目编号</label><input id="mCode" placeholder="如 F1-260101Z"></div>
+<div class="fg"><label>项目名称</label><input id="mName" placeholder="项目名称"></div>
+<div class="fg"><label>项目成员 (逗号分隔)</label><input id="mMembers" placeholder="张三, 李四"></div>
+<div class="fg"><label>开始日期</label><input type="date" id="mStart"></div>
+<div class="fg"><label>预计结束日期</label><input type="date" id="mEnd"></div>
+<div class="ma"><button class="btn btn-s" onclick="document.getElementById('masterModal').classList.remove('show')">取消</button><button class="btn btn-p" onclick="saveMaster()">保存</button></div></div></div>
+
+<div class="modal" id="rkbModal"><div class="modc" style="width:560px;max-width:95vw"><h4 id="rkbTitle">编辑知识库条目</h4>
+<form id="rkbForm" onsubmit="event.preventDefault();submitRkb()">
+<input type="hidden" id="rkbType" value="failure">
+<input type="hidden" id="rkbIdx" value="">
+<div class="rkb-field failure"><div class="fg"><label>所属项目</label><select id="rkb_project_code" onchange="const m=masterData.find(x=>x.project_code===this.value);if(m){document.getElementById('rkb_project_name').value=m.project_name}"><option value="">-- 选择 --</option></select></div>
+<input type="hidden" id="rkb_project_name"></div>
+<div class="rkb-field failure"><div class="fg"><label>发生阶段</label><select id="rkb_failure_stage"><option value="G1立项评审">G1立项评审</option><option value="G2设计验证">G2设计验证</option><option value="G3工程验证">G3工程验证</option><option value="G4试产导入">G4试产导入</option><option value="售后客诉">售后客诉</option></select></div></div>
+<div class="rkb-field failure"><div class="fg"><label>风险分类</label><select id="rkb_risk_category"><option value="模具/结构">模具/结构</option><option value="电子/功能控制">电子/功能控制</option><option value="软件/固件">软件/固件</option><option value="安规认证">安规认证</option><option value="包装/物流暴力跌落">包装/物流暴力跌落</option></select></div></div>
+<div class="rkb-field failure"><div class="fg"><label>失效现象 / 客诉原声</label><textarea id="rkb_failure_desc" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="例如：模具注塑缩水拉白、主板宽电压烧毁..."></textarea></div></div>
+<div class="rkb-field failure"><div class="fg"><label>根本原因 Root Cause</label><textarea id="rkb_root_cause" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="研发界定的技术失效机理..."></textarea></div></div>
+<div class="rkb-field fmea"><div class="fg"><label>知识类目</label><select id="rkb_knowledge_category"><option value="模具工艺">模具工艺</option><option value="硬件功能设计">硬件功能设计</option><option value="可靠性测试方案">可靠性测试方案</option><option value="合规与安规">合规与安规</option></select></div></div>
+<div class="rkb-field fmea"><div class="fg"><label>规则编号</label><input id="rkb_rule_code" placeholder="FMEA-XXX"></div></div>
+<div class="rkb-field fmea"><div class="fg"><label>潜在失效模式</label><input id="rkb_failure_mode" placeholder="例如：外壳注塑缩水"></div></div>
+<div class="rkb-field fmea"><div class="fg"><label>研发防呆与设计要求</label><textarea id="rkb_design_requirements" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="前端设计规范，如：模具需增加2度拔模斜度..."></textarea></div></div>
+<div class="rkb-field fmea"><div class="fg"><label>DQE 检查与测试手段</label><textarea id="rkb_dqe_inspection" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder="DQE 防御动作，如：强制要求供应商提供 DFM 模流分析报告..."></textarea></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>评审任务名称</label><input id="rkb_task_name" placeholder="例如：外壳模具评审"></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>关联项目</label><select id="rkb_project_code2" onchange="const m=masterData.find(x=>x.project_code===this.value);if(m){document.getElementById('rkb_project_name2').value=m.project_name}"><option value="">-- 选择 --</option></select><input type="hidden" id="rkb_project_name2"></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>评审阶段</label><select id="rkb_review_phase"><option value="G1">G1</option><option value="G2">G2</option><option value="G3">G3</option><option value="G4">G4</option><option value="G5">G5</option></select></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>引用的检查项</label><select id="rkb_rule_id"><option value="">-- 选择 FMEA 规则 --</option></select></div>
+<div style="font-size:10px;color:var(--p);padding:6px 10px;background:#f8f9ff;border-radius:6px;margin-bottom:8px" id="rulePreview"></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>评审结论</label><select id="rkb_review_conclusion"><option value="N/A">N/A 不适用</option><option value="Pass">Pass 绿灯</option><option value="Fail">Fail 红灯</option></select></div></div>
+<div class="rkb-field avoid"><div class="fg"><label>遗留风险说明</label><textarea id="rkb_remaining_risk" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical;outline:none" placeholder=""></textarea></div></div>
+<div class="ma"><button class="btn btn-s" type="button" onclick="document.getElementById('rkbModal').classList.remove('show')">取消</button><button class="btn btn-p" type="submit">保存</button></div></form></div></div>
+
+<div class="toast" id="toast"></div>
+<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:var(--t3);background:var(--s);padding:3px 8px;border-radius:4px;border:1px solid var(--b);opacity:.6;z-index:10">⌨ Ctrl+N 新建 · Ctrl+1~6 切Tab · Ctrl+K 搜索 · Esc 关闭</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.13/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SU='https://blmtgdldoqxqkjcpwexu.supabase.co',SK='sb_publishable_S6iODra6VrCBNP6kKAg3qQ_eENv7eXO';
+let sb,projects=[],masterData=[],ap=null,taskMap={},gateMap={},curTab=0,batchSel=new Set(),showAll=false,_pk,_idx;
+
+const PC={gate1:{n:'Gate1 立项',s:'G1',b:'b1',ch:'#4f6ef6',d:4},gate2:{n:'Gate2 设计验证',s:'G2',b:'b2',ch:'#14b8a6',d:14},gate3:{n:'Gate3 工程验证',s:'G3',b:'b3',ch:'#f59e0b',d:21},gate4:{n:'Gate4 试产导入',s:'G4',b:'b4',ch:'#ef4444',d:21},gate5:{n:'Gate5 量产维护',s:'G5',b:'b5',ch:'#8b5cf6',d:90}};
+const PT={gate1:{title:'立项评审',goal:'评估可行性，识别高风险',dl:[{t:'竞品差评分析',y:'r'},{t:'法规合规确认',y:'d'},{t:'SC/CC特性清单',y:'d'},{t:'供应商质量初评',y:'v'},{t:'质量目标设定',y:'d'},{t:'立项会议纪要',y:'v'}],pm:['PRD','目标市场+售价','竞品列表','供应商信息'],sp:['营业执照+资质','ISO证书','出货记录','设备清单']},gate2:{title:'设计验证',goal:'识别失效，制定方案',dl:[{t:'DFMEA分析',y:'r'},{t:'制定DVP&R方案',y:'r'},{t:'ID设计评审',y:'v'},{t:'结构设计评审',y:'v'},{t:'PCBA/硬件评审',y:'v'},{t:'包装方案评审',y:'v'},{t:'确认资源+下发DVP&R',y:'d'},{t:'关键物料供方审核',y:'v'}],pm:['3D图纸','ID+CMF','BOM','规格书'],sp:['模具DFM','RoHS/REACH','物料规格书','样品计划']},gate3:{title:'工程验证',goal:'验证设计质量',dl:[{t:'可靠性测试',y:'t'},{t:'机械测试',y:'t'},{t:'电气测试',y:'t'},{t:'寿命测试',y:'t'},{t:'环境测试',y:'t'},{t:'安规认证',y:'d'},{t:'运输测试',y:'t'},{t:'EVT样机评审',y:'v'},{t:'测试异常+改善',y:'r'},{t:'SIP初稿',y:'d'}],pm:['EVT/DVT样机','认证预算'],sp:['测试样品','8D报告','认证资料','复测样品']},gate4:{title:'试产导入',goal:'验证量产一致性',dl:[{t:'试产准备检查',y:'v'},{t:'试产现场跟进',y:'v'},{t:'试产问题+根因',y:'r'},{t:'IQC来料标准',y:'d'},{t:'IPQC制程标准',y:'d'},{t:'OQC成品标准',y:'d'},{t:'审核供应商CP',y:'v'},{t:'封样管理',y:'d'},{t:'量产良率分析',y:'r'},{t:'PSW放行',y:'v'}],pm:['试产计划','包装设计','BOM定稿','标签说明'],sp:['试产排程','控制计划CP','样品≥50','首件报告','良率日报','CPK']},gate5:{title:'量产维护',goal:'监控市场，持续改善',dl:[{t:'客诉月度分析',y:'r'},{t:'Top3客诉8D',y:'r'},{t:'退货差评趋势',y:'r'},{t:'ECN变更评审',y:'v'},{t:'更新经验教训库',y:'d'},{t:'季度供方审核',y:'v'},{t:'新项目DVP&R迭代',y:'d'}],pm:['月度售后数据','评分+差评','ECN申请'],sp:['量产良率月报','CPK月度','PCN通知','年检报告']}};
+const TM={gate1:{0:'竞品差评分析',1:'法规合规',2:'SC/CC特性',3:'供应商初评',4:'质量目标',5:'会议纪要'},gate2:{0:'DFMEA分析',1:'DVP&R方案',2:'ID设计评审',3:'结构设计评审',4:'PCBA硬件评审',5:'包装方案评审',6:'DVP&R方案',7:'供方审核'},gate3:{0:'测试报告',1:'测试报告',2:'测试报告',3:'测试报告',4:'测试报告',5:'安规认证',6:'测试报告',7:'EVT样机评审',8:'试产问题',9:'SIP检验'},gate4:{0:'试产准备检查',1:'试产现场跟进',2:'试产问题',3:'SIP检验',4:'SIP检验',5:'SIP检验',6:'供应商CP评审',7:'封样管理',8:'量产良率',9:'PSW放行'},gate5:{0:'客诉月报',1:'8D改善',2:'客诉月报',3:'ECN评审',4:'经验教训库',5:'供方审核',6:'DVP&R方案'}};
+
+function T(m,type){const e=document.getElementById('toast');e.textContent=m;e.className='toast show';if(type==='success')e.className='toast success show';else if(type==='error')e.className='toast error show';setTimeout(()=>e.classList.remove('show'),2600)}
+function E(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function tk(p,pk,i){return p.id+'_'+pk+'_'+i}
+function gtk(p,pk,i){return taskMap[tk(p,pk,i)]||{completed:false,risk_status:'green',risk_note:'',waiting_status:false,waiting_for:'',waiting_since:null}}
+function gt(p,pk){return gateMap[p.id+'_'+pk]||{started_at:null,completed_at:null,planned_days:PC[pk].d}}
+function fs(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'}
+function gp(){return projects.find(p=>p.id===ap)}
+
+// ======== Data Loading ========
+async function loadP(){
+const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});if(!data)return;projects=data;
+await loadTasks();await loadGates();renderList();updateQuickBar();
+if(projects.length>0){if(!ap)selP(projects[0].id);}else{ap=null;renderTab()}
+}
+async function loadTasks(){taskMap={};const{data}=await sb.from('checklist_items').select('*');(data||[]).forEach(r=>{taskMap[r.project_id+'_'+r.phase_key+'_'+r.item_index]={completed:r.completed||false,risk_status:r.risk_status||'green',risk_note:r.risk_note||'',waiting_status:r.waiting_status||false,waiting_for:r.waiting_for||'',waiting_since:r.waiting_since||null,deadline:r.deadline||null,task_role:r.task_role||'DQE'}})}
+async function loadGates(){gateMap={};const{data}=await sb.from('gate_tracking').select('*');(data||[]).forEach(r=>{gateMap[r.project_id+'_'+r.phase_key]={started_at:r.started_at,completed_at:r.completed_at,planned_days:r.planned_days||PC[r.phase_key].d}})}
+function renderList(){document.getElementById('pc').textContent=projects.length+' 项目';
+const l=document.getElementById('plist');if(!projects.length){l.innerHTML='<div style="padding:16px;text-align:center;color:var(--t3);font-size:11px">暂无项目</div>';return}
+l.innerHTML=projects.map(p=>{const a=p.id===ap?' ac':'';const ds=dqeStats(p);
+return`<div class="sb-i${a}" onclick="selP('${p.id}')"><div class="av">${E(p.name.charAt(0))}</div><div class="nm">${E(p.name)}<div class="st">${E(p.category)} · ${ds.d}/${ds.tot} DQE</div></div><button class="sb-del" onclick="event.stopPropagation();deleteProject('${p.id}')" title="删除项目">✕</button></div>`}).join('')}
+function updateQuickBar(){const sel=document.getElementById('quickProj');const cur=sel.value;sel.innerHTML='<option value="">📂 我的项目</option>'+projects.map(p=>`<option value="${p.id}"${p.id===ap?' selected':''}>${E(p.name)}</option>`).join('')}
+async function deleteProject(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  if(!confirm(`确定删除项目「${p.name}」？\n此操作将同时删除该项目的所有任务和文件，不可恢复！`))return;
+  T('⏳ 删除中...');
+  try{
+    // 先删 Supabase
+    await sb.from('projects').delete().eq('id',id);
+    await sb.from('checklist_items').delete().eq('project_id',id);
+    await sb.from('gate_tracking').delete().eq('project_id',id);
+    // 再删本地
+    projects=projects.filter(x=>x.id!==id);
+    if(ap===id)ap=projects.length?projects[0].id:null;
+    renderList();updateQuickBar();
+    if(ap)selP(ap);else{document.getElementById('content').innerHTML='<div class="empty"><h3>选择或新建项目</h3></div>';switchTab(0)}
+    T('☁ 已删除','success');
+  }catch(e){T('❌ 删除失败，请重试','error');console.error(e)}
+}
+
+// ======== Navigation ========
+function selP(id){ap=id;if(!gp())return;renderList();updateQuickBar();loadTasks().then(()=>{loadGates().then(()=>{switchTab(curTab);renderList()})})}
+function jumpProj(id){if(!id)return;ap=id;renderList();updateQuickBar();loadTasks().then(()=>loadGates().then(()=>{switchTab(curTab);renderList()}))}
+function jumpToday(){if(!gp()){T('请先选择项目');return}switchTab(0);setTimeout(()=>{const el=document.getElementById('todaySection');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.transition='box-shadow .3s';el.style.boxShadow='0 0 0 3px rgba(79,110,246,.3)';setTimeout(()=>{el.style.boxShadow=''},2000)}},200)}
+function switchTab(i){curTab=i;document.querySelectorAll('.tb').forEach((t,j)=>t.classList.toggle('ac',j===i));renderTab();updateBreadcrumb()}
+function updateBreadcrumb(){const b=document.getElementById('breadcrumb');const p=gp();const labels=['🏠 首页','🏥 健康度','⏳ 等待','📐 流程','🗂 主数据','🛡️ 风控'];
+let h=`<span onclick="switchTab(0)">🏠 首页</span>`;
+if(p)h+=`<span class="sep">›</span><span onclick="switchTab(0)">${E(p.name)}</span>`;
+h+=`<span class="sep">›</span><span>${labels[curTab]}</span>`;
+b.innerHTML=h}
+function renderTab(){const p=gp(),ca=document.getElementById('content');batchSel.clear();
+if(!p){ca.innerHTML='<div class="empty"><h3>选择或新建项目</h3><p>左侧选择项目或点击下方按钮开始工作</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button></div>';return}
+if(curTab===0)renderHome(p,ca);else if(curTab===1)renderHealth(ca);else if(curTab===2)renderWaiting(p,ca);else if(curTab===3)renderWorkflow(ca);else if(curTab===4)renderMasterData(ca);else if(curTab===5)renderRiskKB(ca)}
+
+// ======== HOME (Tab 0) ========
+function renderHome(p,ca){const ds=dqeStats(p),cp=getCurPhase(p),today=dayjs();const risks=countRisks(p);
+let h=`<div class="sh-row"><h3>${E(p.name)}</h3><span class="badge b${Object.keys(PC).indexOf(cp.key)+1}">${cp.s}</span></div>`;
+// Stats row with drag/drop
+let cardOrder=JSON.parse(localStorage.getItem('dqe_card_order')||'[0,1,2,3]');
+const cards=[
+`<div class="card" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)" data-card="0"><div class="card-h">当前阶段</div><div class="card-v" style="color:${cp.ch}">${cp.s}</div><div class="card-s">${cp.n} · ${cp.goal}</div></div>`,
+`<div class="card" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)" data-card="1"><div class="card-h">DQE 进度</div><div style="display:flex;align-items:center;gap:12px"><div class="ring"><svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="#e8eaef" stroke-width="4"/><circle cx="24" cy="24" r="20" fill="none" stroke="${cp.ch}" stroke-width="4" stroke-dasharray="${ds.pct*1.256} 125.6" stroke-linecap="round"/></svg><div class="rt">${ds.pct}%</div></div><div><div style="font-size:18px;font-weight:700">${ds.d}/${ds.tot}</div><div style="font-size:10px;color:var(--t2)">DQE任务</div></div></div></div>`,
+`<div class="card" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)" data-card="2"><div class="card-h">风险</div><div class="card-v" style="color:${risks.red>0?'var(--d)':risks.yellow>0?'var(--w)':'var(--g)'}">${risks.red>0?'🔴'+risks.red:risks.yellow>0?'🟡'+risks.yellow:'✅ 0'}</div><div class="card-s">需要关注</div></div>`,
+`<div class="card" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)" data-card="3"><div class="card-h">项目周期</div><div class="card-v" style="font-size:18px">${dayjs(p.start_date).format('M/D')} → ${getPhases(p)[4].end.format('M/D')}</div><div class="card-s">${getPhases(p)[4].end.diff(dayjs(p.start_date),'day')+1} 天</div></div>`];
+h+=`<div class="grid grid-4" id="statGrid">${cardOrder.map(i=>cards[i]).join('')}</div>`;
+
+// Project Health Cards
+h+=`<div class="sh-row" style="margin-top:16px"><h3>项目健康度</h3></div>`;
+projects.forEach(pr=>{const prDs=dqeStats(pr),prRisks=countRisks(pr),health=prRisks.red>0?'red':prRisks.yellow>0?'yellow':'green';
+const bg=health==='red'?'#fef2f2':health==='yellow'?'#fffbeb':'#ecfdf5';
+const bc=health==='red'?'#fecaca':health==='yellow'?'#fde3b8':'#bbf7d0';
+const em=health==='red'?'🔴':health==='yellow'?'🟡':'🟢';
+h+=`<div class="hc" style="background:${bg};border-color:${bc}" onclick="selP('${pr.id}')"><div class="hr"><span class="hn">${em} ${E(pr.name)}</span><span class="hp" style="background:${prDs.pct>=80?'#dcfce7':prDs.pct>=50?'#fef8ed':'#fef2f2'};color:${prDs.pct>=80?'#065f46':prDs.pct>=50?'#92400e':'#991b1b'}">${prDs.pct}%</span></div><div class="hm"><span>${E(pr.category)}</span>${prRisks.red>0?`<span style="color:var(--d)">🔴${prRisks.red}</span>`:''}${prRisks.yellow>0?`<span style="color:var(--w)">🟡${prRisks.yellow}</span>`:''}</div><div class="hbar"><div class="hf" style="width:${prDs.pct}%;background:${prDs.pct>=80?'#22c55e':prDs.pct>=50?'#f59e0b':'#ef4444'}"></div></div></div>`});
+
+// Today's DQE Tasks & Waiting
+h+=`<div class="sh-row" style="margin-top:16px"><h3 id="todaySection">📋 今日 DQE 任务</h3></div>`;
+let tasksRendered=0;PT[cp.key].dl.forEach((ts,i)=>{
+const t=gtk(p,cp.key,i);if(!t.completed&&!t.waiting_status){tasksRendered++;
+h+=taskCard(p,cp.key,i,ts,t,null,cp)}});
+if(!tasksRendered)h+='<div class="sec-empty">🎉 当前阶段DQE任务已全部完成</div>';
+
+// Waiting items
+let wItems=[];Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((ts,i)=>{const t=gtk(p,pk,i);if(t.waiting_status)wItems.push({pk,i,name:ts.t,phase:PC[pk],who:t.waiting_for,since:t.waiting_since})})});
+if(wItems.length){
+h+=`<div class="sh-row" style="margin-top:16px"><h3>⏳ 阻塞 & 等待</h3></div>`;
+wItems.forEach(w=>{const days=w.since?today.diff(dayjs(w.since),'day'):0;
+h+=`<div class="wi"><div style="flex:1"><strong>${E(w.name)}</strong> ${w.phase.n}<br><span class="wd">等待 ${E(w.who||'')} · ${days}天</span></div><div style="display:flex;gap:4px"><button class="btn btn-xs btn-o" onclick="copyReminder('${w.name}','${w.who||''}')">催办</button><button class="btn btn-xs btn-s" onclick="resolveWait('${w.pk}',${w.i})">✅</button></div></div>`})}
+
+// Mini Gantt
+h+=`<div class="sh-row" style="margin-top:16px"><h3>📊 阶段时间线</h3></div><div class="card"><div class="mg">`;
+getPhases(p).forEach(ph=>{const ts=PT[ph.key].dl,cm=ts.filter((_,j)=>gtk(p,ph.key,j).completed).length,tot=ts.length,pr=tot>0?cm/tot:0;
+h+=`<div class="mg-r"><div class="mg-l">${ph.s}</div><div class="mg-b"><div class="mg-f" style="width:${pr*100}%;background:${ph.ch};opacity:0.7"></div></div><span style="font-size:10px;color:var(--t3)">${cm}/${tot}</span></div>`});
+h+=`</div></div>`;
+// 紧凑阶段卡 (foldable)
+h+=`<div class="sh-row foldable" style="margin-top:16px" onclick="toggleFold(this)"><h3>📱 阶段概览</h3></div><div class="fold-body collapsed"><div class="grid grid-2">`;
+Object.entries(PC).forEach(([pk,ph])=>{const ts=PT[pk].dl;let cm=0,ct=0,rs=0;ts.forEach((_,i)=>{if(isDqeTask(p,pk,i)){ct++;if(gtk(p,pk,i).completed)cm++}const t=gtk(p,pk,i);if(t.risk_status==='red')rs++});const prg=ct>0?Math.round(cm/ct*100):0;
+h+=`<div class="pcard" onclick="opd('${pk}')"><div class="pd" style="background:${ph.ch}">${ph.s}</div><div class="pi"><div class="pn">${ph.n}</div><div class="ps">${cm}/${ct} DQE${rs>0?' · ⚠️'+rs:''}</div></div><div class="pp" style="color:${ph.ch}">${prg}%</div></div>`});
+h+=`</div></div>`;
+// Gantt chart
+const phases=getPhases(p),os=phases[0].start,oe=phases[4].end,gToday=dayjs();
+const td=Math.max(oe.diff(os,'day')+1,1),totalW=680,areaW=totalW-90,gPpd=Math.max(areaW/td,2.5);
+const barH=28,gGap=10,perRow=barH+gGap,labelX=85,chartW=td*gPpd,chartH=42+phases.length*perRow+20;
+h+=`<div class="sh-row foldable collapsed" style="margin-top:16px" onclick="toggleFold(this)"><h3>📊 项目跟进甘特图</h3></div><div class="fold-body collapsed"><div class="card" style="overflow-x:auto;padding:12px 8px 8px"><div id="ganttHome"></div></div></div>`;
+ca.innerHTML=h;
+setTimeout(()=>{
+const svg=document.getElementById('ganttHome');if(!svg)return;
+const td2=Math.max(oe.diff(os,'day')+1,1),ppd2=Math.max(areaW/td2,2.5);
+let g=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${chartH}" viewBox="0 0 ${totalW} ${chartH}" style="font-family:inherit">`;
+g+=`<rect x="${labelX}" y="0" width="${td2*ppd2}" height="32" fill="var(--bg)" rx="4"/>`;
+for(let d=0;d<=td2;d+=Math.ceil(td2/8)){const date=os.add(d,'day'),x=labelX+d*ppd2;g+=`<text x="${x}" y="14" font-size="9" fill="var(--t3)" text-anchor="middle">${date.format('M/D')}</text>`}
+const tX=gToday.isAfter(os)&&gToday.isBefore(oe.add(1,'day'))?labelX+gToday.diff(os,'day')*ppd2:null;
+if(tX){g+=`<line x1="${tX}" y1="6" x2="${tX}" y2="${38+phases.length*perRow}" stroke="var(--d)" stroke-width="1.5" stroke-dasharray="4,3"/>`;g+=`<rect x="${tX-18}" y="4" width="36" height="14" rx="4" fill="var(--d)"/>`;g+=`<text x="${tX}" y="14" font-size="9" fill="#fff" text-anchor="middle" font-weight="600">今天</text>`}
+phases.forEach((ph,i)=>{const y=42+i*perRow,sd=ph.start.diff(os,'day'),ed=ph.end.diff(os,'day'),x=labelX+sd*ppd2,w=Math.max((ed-sd+1)*ppd2,4);g+=`<rect x="0" y="${y-4}" width="${totalW}" height="${perRow}" fill="${i%2?'#fff':'#fafbfc'}" rx="4"/>`;g+=`<text x="${labelX-8}" y="${y+barH/2+4}" font-size="11" fill="var(--t)" text-anchor="end" dominant-baseline="central" font-weight="600">${ph.s}</text>`;g+=`<rect x="${x}" y="${y}" width="${w}" height="${barH}" rx="7" fill="${ph.ch}" opacity="0.15"/>`;g+=`<rect x="${x}" y="${y}" width="${w}" height="${barH}" rx="7" fill="${ph.ch}" opacity="0.7" cursor="pointer" onclick="opd('${ph.key}')"/>`;const ts=PT[ph.key].dl,ct=ts.filter((_,j)=>isDqeTask(p,ph.key,j)).length,cm=ts.filter((_,j)=>isDqeTask(p,ph.key,j)&&gtk(p,ph.key,j).completed).length,pr=ct>0?cm/ct:0;if(pr>0)g+=`<rect x="${x}" y="${y}" width="${w*pr}" height="${barH}" rx="7" fill="#fff" opacity="0.35" pointer-events="none"/>`;if(w>50)g+=`<text x="${x+6}" y="${y+barH/2+1}" font-size="9" fill="#fff" dominant-baseline="central" pointer-events="none" font-weight="500">${ph.n} ${cm}/${ct}</text>`;g+=`<title>${ph.n}·${ph.start.format('M/D')}→${ph.end.format('M/D')}·DQE:${cm}/${ct}</title>`});
+g+='</svg>';svg.innerHTML=g;
+},50)}
+
+function taskCard(p,pk,i,ts,t,deadline,ph){const rc=t.risk_status==='red'?'r':t.risk_status==='yellow'?'y':'g';
+const tc=ts.y==='r'?'rp':ts.y==='t'?'tt':ts.y==='d'?'tc':'tr';
+const tl=ts.y==='r'?'报告':ts.y==='t'?'测试':ts.y==='d'?'标准':'评审';
+const dls=deadline?` · ${deadline.format('M/D')}`:'';
+const tpl=TM[pk]&&TM[pk][i];
+return`<div class="ti${deadline&&deadline.isBefore(dayjs().add(2,'day'))&&!t.completed?' urgent':''}" onclick="toggleCheck('${pk}',${i})"><div class="chk${t.completed?' done':''}"></div><span class="rd ${rc}" onclick="event.stopPropagation();openRisk('${pk}',${i})"></span><div class="tnm">${E(ts.t)} <span class="tag tag-${tc}">${tl}</span></div><div class="tph">${ph?ph.n:''}${dls}${t.risk_note?` · ⚠️`:''}</div><div class="tact">${tpl?`<a href="templates/${getTplFile(tpl)}" target="_blank" style="text-decoration:none"><button class="btn btn-xs btn-o">📋</button></a>`:''}<button class="btn btn-xs btn-s" onclick="event.stopPropagation();uploadFile('${pk}',${i})">📤</button><button class="btn btn-xs btn-s" onclick="event.stopPropagation();openWait('${pk}',${i})">⏳</button></div></div>`}
+
+function getCurPhase(p){const today=dayjs(),phases=getPhases(p);let cur=phases.find(x=>today.isAfter(x.start.subtract(1,'day'))&&today.isBefore(x.end.add(1,'day')));return cur||(today.isBefore(phases[0].start)?phases[0]:phases[4])}
+function getTplFile(key){const m={竞品差评分析:'01_竞品差评分析报告.xlsx',DFMEA分析:'02_DFMEA分析表.xlsx','DVP&R方案':'03_DVP&R方案.xlsx',测试报告:'04_测试报告.xlsx',SIP检验:'05_SIP检验标准.xlsx','8D改善':'06_8D改善报告.xlsx',ECN评审:'07_ECN评审记录.xlsx',客诉月报:'08_客诉分析月报.xlsx',供方审核:'09_供方审核报告.xlsx',试产问题:'10_试产问题追踪表.xlsx',法规合规:'11_法规合规确认清单.xlsx','SC/CC特性':'12_SC_CC特性清单.xlsx',供应商初评:'13_供应商质量初评表.docx',质量目标:'14_质量目标设定表.xlsx',会议纪要:'15_立项会议纪要模板.docx',GRR:'16_GRR分析报告.xlsx',Cpk:'17_Cpk分析表.xlsx',质量协议:'18_质量协议模板.docx',试产准备检查:'19_试产准备检查表.xlsx',试产现场跟进:'20_试产现场跟进记录表.xlsx',供应商CP评审:'21_供应商控制计划评审表.xlsx',封样管理:'22_封样管理记录表.xlsx',量产良率:'23_量产良率分析报告.xlsx',PSW放行:'24_PSW放行评审表.xlsx',ID设计评审:'25_ID设计评审检查表.xlsx',结构设计评审:'26_结构设计评审检查表.xlsx',PCBA硬件评审:'27_PCBA硬件评审检查表.xlsx',包装方案评审:'28_包装方案评审检查表.xlsx',安规认证:'29_安规认证确认表.xlsx',EVT样机评审:'30_EVT样机评审检查表.xlsx',经验教训库:'31_经验教训库更新表.xlsx'};return m[key]||'04_测试报告.xlsx'}
+
+function getPhases(p){const st=dayjs(p.start_date);let cur=st;return Object.entries(PC).map(([k,c])=>{const end=cur.add(c.d-1,'day');const r={key:k,...c,start:cur.clone(),end:end.clone()};cur=end.add(1,'day');return r})}
+function isDqeTask(p,pk,i){const t=gtk(p,pk,i);return (t.task_role||'DQE')==='DQE'}
+function _countDqeDone(p){let d=0,tot=0;Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((_,i)=>{if(isDqeTask(p,pk,i)){tot++;if(gtk(p,pk,i).completed)d++}})});return{d,tot}}
+function dqeStats(p){const r=_countDqeDone(p);return{d:r.d,tot:r.tot,pct:r.tot>0?Math.round(r.d/r.tot*100):0}}
+function countRisks(p){let r=0,y=0;Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((_,i)=>{const t=gtk(p,pk,i);if(t.risk_status==='red')r++;if(t.risk_status==='yellow')y++})});return{red:r,yellow:y}}
+function statsHTML(p){const phases=getPhases(p);const ds=dqeStats(p);const cur=getCurPhase(p);let cd=0,ctot=0;PT[cur.key].dl.forEach((_,i)=>{if(isDqeTask(p,cur.key,i)){ctot++;if(gtk(p,cur.key,i).completed)cd++}});return`<div class="card"><div class="card-h">当前 (DQE)</div><div class="card-v" style="color:${cur.ch};font-size:16px">${cur.s}</div><div class="card-s">${cd}/${ctot} DQE</div></div><div class="card"><div class="card-h">DQE总进度</div><div class="card-v">${ds.pct}%</div><div class="card-s">${ds.d}/${ds.tot}</div></div><div class="card"><div class="card-h">周期</div><div class="card-v" style="font-size:16px">${phases[0].start.format('M/D')}-${phases[4].end.format('M/D')}</div><div class="card-s">${phases[4].end.diff(phases[0].start,'day')+1}天</div></div>`}
+
+// ======== Tab 1: Health ========
+function renderHealth(ca){let h=`<div class="sh-row"><h3>🏥 项目健康度总览</h3></div>`;
+if(!projects.length){h+='<div class="empty"><p>暂无项目</p></div>'}else{
+projects.forEach(p=>{const ds=dqeStats(p);let red=0,yel=0;const today=dayjs();let maxDelay=0;
+Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((_,i)=>{const t=gtk(p,pk,i);if(t.risk_status==='red')red++;if(t.risk_status==='yellow')yel++;if(!showAll&&!isDqeTask(p,pk,i))return;if(!t.completed&&t.deadline){const dl=dayjs(t.deadline).diff(today,'day');if(dl<0)maxDelay=Math.max(maxDelay,Math.abs(dl))}})});
+const health=red>0?'red':yel>0||maxDelay>0?'yellow':'green';
+const bg=health==='red'?'#fef2f2':health==='yellow'?'#fffbeb':'#ecfdf5';
+const bc=health==='red'?'#fecaca':health==='yellow'?'#fde3b8':'#bbf7d0';
+const em=health==='red'?'🔴':health==='yellow'?'🟡':'🟢';
+const barCol=health==='red'?'#ef4444':health==='yellow'?'#f59e0b':'#22c55e';
+h+=`<div class="hc" style="background:${bg};border-color:${bc}" onclick="selP('${p.id}')"><div class="hr"><span class="hn">${em} ${E(p.name)}</span><span class="hp" style="background:${barCol}20;color:${barCol}">${ds.pct}%</span></div><div class="hm"><span>${E(p.category)}</span>${red>0?`<span style="color:var(--d)">🔴${red}</span>`:''}${yel>0?`<span style="color:var(--w)">🟡${yel}</span>`:''}${maxDelay>0?`<span style="color:var(--d)">延误${maxDelay}天</span>`:''}</div><div class="hbar"><div class="hf" style="width:${ds.pct}%;background:${barCol}"></div></div></div>`})}
+// 阶段耗时分析
+const ap=p;if(ap){const phases=getPhases(p);
+h+=`<div class="sh-row" style="margin-top:16px"><h3>📈 阶段耗时分析</h3></div><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+<tr style="background:var(--p);color:#fff"><th style="padding:8px;text-align:left">阶段</th><th style="padding:8px">计划</th><th style="padding:8px">实际</th><th style="padding:8px">偏差</th><th style="padding:8px">状态</th></tr>`;
+Object.entries(PC).forEach(([pk,ph])=>{const g=gt(p,pk);let actual='-',diff=0,status='-';if(g.completed_at&&g.started_at){actual=dayjs(g.completed_at).diff(dayjs(g.started_at),'day');diff=actual-ph.d;status=diff<=0?'✅ 提前':'⏰ 延期'}else{g.started_at?status='🔄 进行中':'🔄 未开始'}
+h+=`<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="opd('${pk}')"><td style="padding:8px;font-weight:500">${ph.n}</td><td style="padding:8px;text-align:center">${ph.d}天</td><td style="padding:8px;text-align:center">${actual==='-'?'-':actual+'天'}</td><td style="padding:8px;text-align:center;color:${diff>0?'var(--d)':diff<0?'var(--g)':''}">${diff||'-'}</td><td style="padding:8px;text-align:center">${status}</td></tr>`});
+h+=`</table></div>`}
+ca.innerHTML=h}
+
+// ======== Tab 2: Waiting ========
+function renderWaiting(p,ca){let items=[];
+Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((ts,i)=>{const t=gtk(p,pk,i);if(t.waiting_status){const days=t.waiting_since?dayjs().diff(dayjs(t.waiting_since),'day'):0;items.push({pk,i,name:ts.t,phase:PC[pk],days,who:t.waiting_for})}})});
+let h=`<div class="sh-row"><h3>⏳ 等待中 · ${E(p.name)}</h3></div><div class="card" style="margin-bottom:10px"><div class="card-h">等待项</div><div class="card-v">${items.length}</div></div>`;
+if(!items.length)h+='<div class="sec-empty">没有等待中的任务</div>';
+else items.forEach(it=>{h+=`<div class="wi"><div style="flex:1"><strong>${E(it.name)}</strong> · ${it.phase.n}<br><span class="wd">等待 ${E(it.who||'')} · 已${it.days}天</span></div><div style="display:flex;gap:4px"><button class="btn btn-xs btn-o" onclick="copyReminder('${it.name}','${it.who||''}')">催办</button><button class="btn btn-xs btn-s" onclick="resolveWait('${it.pk}',${it.i})">✅</button></div></div>`});
+ca.innerHTML=h}
+
+// ======== Tab 3: Compact ========
+function renderCompact(p,ca){let h=`<div class="sh-row"><h3>📱 精简 · ${E(p.name)}</h3></div>`;
+Object.entries(PC).forEach(([pk,ph])=>{const ts=PT[pk].dl;let d=0,cm=0,ct=0,rs=0;ts.forEach((_,i)=>{if(isDqeTask(p,pk,i)){ct++;if(gtk(p,pk,i).completed)cm++;d=cm}const t=gtk(p,pk,i);if(t.risk_status==='red')rs++});const prg=ct>0?Math.round(cm/ct*100):0;
+h+=`<div class="pcard" onclick="opd('${pk}')"><div class="pd" style="background:${ph.ch}">${ph.s}</div><div class="pi"><div class="pn">${ph.n}</div><div class="ps">${cm}/${ct} DQE${rs>0?' · ⚠️'+rs:''}</div></div><div class="pp" style="color:${ph.ch}">${prg}%</div></div>`});
+// 甘特图
+const phases=getPhases(p),os=phases[0].start,oe=phases[4].end,today=dayjs();
+const td=Math.max(oe.diff(os,'day')+1,1),totalW=680,areaW=totalW-90,ppd=Math.max(areaW/td,2.5);
+const barH=28,gap=10,perRow=barH+gap,labelX=85,chartW=td*ppd,chartH=42+phases.length*perRow+20;
+h+=`<div class="sh-row" style="margin-top:18px"><h3>📊 项目跟进甘特图</h3></div><div class="card" style="overflow-x:auto;padding:12px 8px 8px"><div id="ganttC"></div></div>`;
+ca.innerHTML=h;
+setTimeout(()=>{
+const svg=document.getElementById('ganttC'),today=dayjs();
+let g=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${chartH}" viewBox="0 0 ${totalW} ${chartH}" style="font-family:inherit">`;
+// Header bg
+g+=`<rect x="${labelX}" y="0" width="${chartW}" height="32" fill="#f8fafc" rx="4"/>`;
+// Date markers every ~7 days
+for(let d=0;d<=td;d+=Math.ceil(td/8)){
+  const date=os.add(d,'day'),x=labelX+d*ppd;
+  g+=`<text x="${x}" y="14" font-size="9" fill="#9499a3" text-anchor="middle">${date.format('M/D')}</text>`;
+  if(d>0)g+=`<line x1="${x}" y1="18" x2="${x}" y2="38" stroke="#e8eaef" stroke-width="1"/>`;
+}
+// Today line
+const todayX=today.isAfter(os)&&today.isBefore(oe.add(1,'day'))?labelX+today.diff(os,'day')*ppd:null;
+if(todayX){
+  g+=`<line x1="${todayX}" y1="6" x2="${todayX}" y2="${38+phases.length*perRow}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  g+=`<rect x="${todayX-18}" y="4" width="36" height="14" rx="4" fill="#ef4444"/>`;
+  g+=`<text x="${todayX}" y="14" font-size="9" fill="#fff" text-anchor="middle" font-weight="600">今天</text>`;
+}
+// Phase bars
+phases.forEach((ph,i)=>{
+  const y=42+i*perRow,sd=ph.start.diff(os,'day'),ed=ph.end.diff(os,'day');
+  const x=labelX+sd*ppd,w=Math.max((ed-sd+1)*ppd,4),bH=barH;
+  // Row bg
+  g+=`<rect x="0" y="${y-4}" width="${totalW}" height="${perRow}" fill="${i%2?'#fff':'#fafbfc'}" rx="4"/>`;
+  // Label
+  g+=`<text x="${labelX-8}" y="${y+bH/2+4}" font-size="11" fill="#1a1d23" text-anchor="end" dominant-baseline="central" font-weight="600">${ph.s}</text>`;
+  // Bar bg
+  g+=`<rect x="${x}" y="${y}" width="${w}" height="${bH}" rx="7" fill="${ph.ch}15"/>`;
+  // Bar fill
+  g+=`<rect x="${x}" y="${y}" width="${w}" height="${bH}" rx="7" fill="${ph.ch}" opacity="0.7" cursor="pointer" onclick="opd('${ph.key}')"/>`;
+  // Progress overlay
+  const ts=PT[ph.key].dl,ct=ts.filter((_,j)=>isDqeTask(p,ph.key,j)).length,cm=ts.filter((_,j)=>isDqeTask(p,ph.key,j)&&gtk(p,ph.key,j).completed).length,pr=ct>0?cm/ct:0;
+  if(pr>0)g+=`<rect x="${x}" y="${y}" width="${w*pr}" height="${bH}" rx="7" fill="#fff" opacity="0.35" pointer-events="none"/>`;
+  // Label on bar
+  if(w>50)g+=`<text x="${x+6}" y="${y+bH/2+1}" font-size="9" fill="#fff" dominant-baseline="central" pointer-events="none" font-weight="500">${ph.n} ${cm}/${ct}</text>`;
+  // Tooltip
+  g+=`<title>${ph.n}\n${ph.start.format('M/D')} → ${ph.end.format('M/D')}\nDQE: ${cm}/${ct} · ${ph.d}天</title>`;
+  // Risk indicator
+  const rs=ts.filter((_,j)=>{const t=gtk(p,ph.key,j);return t.risk_status==='red'}).length;
+  if(rs>0&&today.isAfter(ph.start)&&pr<1)g+=`<text x="${x+w+6}" y="${y+bH/2+1}" font-size="10" dominant-baseline="central">🔴</text>`;
+  else if(ph.end.diff(today,'day')<=3&&pr<1&&ct>0)g+=`<text x="${x+w+6}" y="${y+bH/2+1}" font-size="10" dominant-baseline="central">🟡</text>`;
+});
+g+='</svg>';
+svg.innerHTML=g;
+},50)}
+
+// ======== Tab 4: Analysis ========
+function renderAnalysis(p,ca){let h=`<div class="sh-row"><h3>📈 阶段耗时分析 · ${E(p.name)}</h3></div><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+<tr style="background:var(--p);color:#fff"><th style="padding:8px;text-align:left">阶段</th><th style="padding:8px">计划</th><th style="padding:8px">实际</th><th style="padding:8px">偏差</th><th style="padding:8px">状态</th></tr>`;
+Object.entries(PC).forEach(([pk,ph])=>{const g=gt(p,pk);let actual='-',diff=0,status='-';if(g.completed_at&&g.started_at){actual=dayjs(g.completed_at).diff(dayjs(g.started_at),'day');diff=actual-ph.d;status=diff<=0?'✅ 提前':'⏰ 延期'}else{g.started_at?status='🔄 进行中':'🔄 未开始'}
+h+=`<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="opd('${pk}')"><td style="padding:8px;font-weight:500">${ph.n}</td><td style="padding:8px;text-align:center">${ph.d}天</td><td style="padding:8px;text-align:center">${actual==='-'?'-':actual+'天'}</td><td style="padding:8px;text-align:center;color:${diff>0?'var(--d)':diff<0?'var(--g)':''}">${diff||'-'}</td><td style="padding:8px;text-align:center">${status}</td></tr>`});
+h+=`</table></div>`;ca.innerHTML=h}
+
+// ======== Tab 5: DQE Workflow ========
+function renderWorkflow(ca){const steps=[
+{s:'G1',n:'立项评审',c:'#4f6ef6',g:'评估可行性，识别高风险',t:[
+  {name:'竞品差评分析',desc:'分析竞品差评，识别潜在质量风险',out:'竞品差评分析报告',tpl:'01_竞品差评分析报告.xlsx'},
+  {name:'法规合规确认',desc:'确认目标市场法规，列出合规清单',out:'法规合规确认清单',tpl:'11_法规合规确认清单.xlsx'},
+  {name:'SC/CC特性清单',desc:'识别安全特性(SC)和关键特性(CC)',out:'SC/CC特性清单',tpl:'12_SC_CC特性清单.xlsx'},
+  {name:'供应商初评',desc:'评估候选供应商质量能力',out:'供应商质量初评表',tpl:'13_供应商质量初评表.docx'},
+  {name:'质量目标设定',desc:'设定KPI：退货率/差评率/良率等',out:'质量目标设定表',tpl:'14_质量目标设定表.xlsx'},
+  {name:'立项会议纪要',desc:'组织立项评审会议，形成决议',out:'立项会议纪要',tpl:'15_立项会议纪要模板.docx'}
+]},
+{s:'G2',n:'设计验证',c:'#14b8a6',g:'识别失效模式，制定验证方案',t:[
+  {name:'DFMEA分析',desc:'识别潜在失效模式，计算RPN',out:'DFMEA分析表',tpl:'02_DFMEA分析表.xlsx'},
+  {name:'制定DVP&R方案',desc:'制定设计验证计划，明确测试项目',out:'DVP&R方案',tpl:'03_DVP&R方案.xlsx'},
+  {name:'ID设计评审',desc:'评审外观工艺、人体工学、装配',out:'ID设计评审检查表',tpl:'25_ID设计评审检查表.xlsx'},
+  {name:'结构设计评审',desc:'评审壁厚/强度/公差/模具可行性',out:'结构设计评审检查表',tpl:'26_结构设计评审检查表.xlsx'},
+  {name:'PCBA/硬件评审',desc:'评审EMC/散热/元器件选型',out:'PCBA硬件评审检查表',tpl:'27_PCBA硬件评审检查表.xlsx'},
+  {name:'包装方案评审',desc:'评审运输/缓冲/标签合规',out:'包装方案评审检查表',tpl:'28_包装方案评审检查表.xlsx'},
+  {name:'确认资源+下发DVP&R',desc:'确认测试资源，下发验证计划',out:'DVP&R方案(确认版)',tpl:'03_DVP&R方案.xlsx'},
+  {name:'关键物料供方审核',desc:'审核关键物料供应商质量体系',out:'供方审核报告',tpl:'09_供方审核报告.xlsx'}
+]},
+{s:'G3',n:'工程验证',c:'#f59e0b',g:'验证设计质量，完成测试',t:[
+  {name:'可靠性测试',desc:'加速老化/温湿度循环/HALT',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'机械测试',desc:'跌落/振动/挤压/弯折',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'电气测试',desc:'电气性能/电源/信号完整性',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'寿命测试',desc:'按键/插拔/开关循环寿命',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'环境测试',desc:'温度/湿度/盐雾/UV',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'安规认证',desc:'UL/CE/FCC/RoHS等确认',out:'安规认证确认表',tpl:'29_安规认证确认表.xlsx'},
+  {name:'运输测试',desc:'ISTA 3A包装运输测试',out:'测试报告',tpl:'04_测试报告.xlsx'},
+  {name:'EVT样机评审',desc:'评审工程样机功能/外观/装配',out:'EVT样机评审检查表',tpl:'30_EVT样机评审检查表.xlsx'},
+  {name:'测试异常+改善',desc:'汇总测试异常，推动8D改善',out:'试产问题追踪表',tpl:'10_试产问题追踪表.xlsx'},
+  {name:'SIP初稿',desc:'编制来料/制程/成品检验标准',out:'SIP检验标准',tpl:'05_SIP检验标准.xlsx'}
+]},
+{s:'G4',n:'试产导入',c:'#ef4444',g:'验证量产一致性，完成放行',t:[
+  {name:'试产准备检查',desc:'物料/工装/设备/SOP/人员就位',out:'试产准备检查表',tpl:'19_试产准备检查表.xlsx'},
+  {name:'试产现场跟进',desc:'巡检SMT/DIP/组装/测试全流程',out:'试产现场跟进记录表',tpl:'20_试产现场跟进记录表.xlsx'},
+  {name:'试产问题+根因',desc:'追踪试产问题，推动根因分析',out:'试产问题追踪表',tpl:'10_试产问题追踪表.xlsx'},
+  {name:'IQC来料标准',desc:'建立来料检验标准(SIP-IQC)',out:'SIP检验标准',tpl:'05_SIP检验标准.xlsx'},
+  {name:'IPQC制程标准',desc:'建立制程巡检标准(SIP-IPQC)',out:'SIP检验标准',tpl:'05_SIP检验标准.xlsx'},
+  {name:'OQC成品标准',desc:'建立成品检验标准(SIP-OQC)',out:'SIP检验标准',tpl:'05_SIP检验标准.xlsx'},
+  {name:'审核供应商CP',desc:'评审供应商控制计划完整性',out:'供应商控制计划评审表',tpl:'21_供应商控制计划评审表.xlsx'},
+  {name:'封样管理',desc:'建立样品管理台账',out:'封样管理记录表',tpl:'22_封样管理记录表.xlsx'},
+  {name:'量产良率分析',desc:'分析首次良率，推动CPK达标',out:'量产良率分析报告',tpl:'23_量产良率分析报告.xlsx'},
+  {name:'PSW放行',desc:'审核PSW文件，批准量产放行',out:'PSW放行评审表',tpl:'24_PSW放行评审表.xlsx'}
+]},
+{s:'G5',n:'量产维护',c:'#8b5cf6',g:'监控市场表现，持续改善',t:[
+  {name:'客诉月度分析',desc:'按月统计客诉类别、趋势',out:'客诉分析月报',tpl:'08_客诉分析月报.xlsx'},
+  {name:'Top3客诉8D',desc:'对Top3客诉执行8D改善',out:'8D改善报告',tpl:'06_8D改善报告.xlsx'},
+  {name:'退货差评趋势',desc:'追踪退货率和差评率趋势',out:'客诉分析月报',tpl:'08_客诉分析月报.xlsx'},
+  {name:'ECN变更评审',desc:'评审工程变更对质量的影响',out:'ECN评审记录',tpl:'07_ECN评审记录.xlsx'},
+  {name:'更新经验教训库',desc:'总结项目经验，更新LL库',out:'经验教训库更新表',tpl:'31_经验教训库更新表.xlsx'},
+  {name:'季度供方审核',desc:'按季度进行供应商审核',out:'供方审核报告',tpl:'09_供方审核报告.xlsx'},
+  {name:'新项目DVP&R迭代',desc:'基于经验优化DVP&R模板',out:'DVP&R方案',tpl:'03_DVP&R方案.xlsx'}
+]}
+];
+let h=`<div class="sh-row"><h3>📐 DQE 新品开发全流程</h3><span style="font-size:10px;color:var(--t3)">5阶段APQP · ${steps.reduce((a,s)=>a+s.t.length,0)}项DQE任务 · ${steps.length}个Gate</span></div>`;
+// Flow diagram
+h+=`<div class="card" style="overflow-x:auto;padding:20px 12px 12px;margin-bottom:14px">`;
+h+=`<svg id="flowSvg" width="100%" height="130" viewBox="0 0 760 130" style="font-family:inherit"></svg></div>`;
+// Phase cards
+steps.forEach((st,i)=>{
+h+=`<div class="card" style="margin-bottom:14px;border-left:4px solid ${st.c}">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<div style="width:36px;height:36px;border-radius:10px;background:${st.c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${st.s}</div>
+<div><div style="font-weight:700;font-size:14px">${st.n}</div><div style="font-size:11px;color:var(--t2)">🎯 ${st.g}</div></div>
+<div style="margin-left:auto"><span class="badge" style="background:${st.c}15;color:${st.c}">${st.t.length} DQE任务</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:6px">`;
+st.t.forEach(t=>{
+h+=`<div style="padding:10px;background:#fafbfc;border-radius:8px;border:1px solid #e8eaef;font-size:12px;display:flex;align-items:flex-start;gap:8px;transition:var(--trans)">
+<div style="width:20px;height:20px;border-radius:50%;background:${st.c}15;color:${st.c};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px">✓</div>
+<div style="flex:1"><div style="font-weight:600;margin-bottom:2px">${t.name}</div><div style="font-size:10px;color:var(--t2);margin-bottom:4px">${t.desc}</div>
+<div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--t3);background:#f0f0f5;padding:1px 6px;border-radius:3px">📄 ${t.out}</span></div></div></div>`});
+h+=`</div></div>`});
+ca.innerHTML=h;
+// Draw flow diagram
+setTimeout(()=>{
+const svg=document.getElementById('flowSvg');
+let s=`<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" style="font-family:inherit">`;
+const nw=110,ng=40,totalW=steps.length*nw+(steps.length-1)*ng,startX=(760-totalW)/2;
+steps.forEach((st,i)=>{
+const x=startX+i*(nw+ng),y=20;
+// Connection arrow
+if(i<steps.length-1){
+  const ax=x+nw,ay=y+nw/2,al=ng-16;
+  s+=`<line x1="${ax}" y1="${ay}" x2="${ax+al}" y2="${ay}" stroke="${st.c}" stroke-width="2"/>`;
+  s+=`<polygon points="${ax+al+8},${ay} ${ax+al},${ay-5} ${ax+al},${ay+5}" fill="${st.c}"/>`;
+}
+// Card
+s+=`<rect x="${x}" y="${y}" width="${nw}" height="${nw}" rx="14" fill="${st.c}" opacity="0.08"/>`;
+s+=`<rect x="${x}" y="${y}" width="${nw}" height="${nw}" rx="14" fill="${st.c}" opacity="0.15"/>`;
+s+=`<rect x="${x}" y="${y}" width="${nw}" height="4" rx="14" fill="${st.c}"/>`;
+// Label
+s+=`<text x="${x+nw/2}" y="${y+30}" font-size="20" font-weight="700" fill="${st.c}" text-anchor="middle">${st.s}</text>`;
+s+=`<text x="${x+nw/2}" y="${y+52}" font-size="12" font-weight="600" fill="${st.c}" text-anchor="middle">${st.n}</text>`;
+s+=`<text x="${x+nw/2}" y="${y+70}" font-size="10" fill="#9499a3" text-anchor="middle">${st.t.length}项</text>`;
+// Bottom description
+s+=`<text x="${x+nw/2}" y="${y+nw+20}" font-size="9" fill="#9499a3" text-anchor="middle">${st.g.slice(0,14)}</text>`;
+});
+s+='</svg>';
+svg.innerHTML=s;
+},50)}
+
+// ======== Detail Panel ========
+async function opd(pk){const p=gp();if(!p)return;const cfg=PC[pk],ts=PT[pk];batchSel.clear();
+document.getElementById('dpb').textContent=cfg.s;document.getElementById('dpb').className='badge '+cfg.b;
+document.getElementById('dt').textContent=cfg.n+' · '+ts.title;
+let h=`<div class="phase-goal"><strong>🎯</strong> ${ts.goal} · <button class="btn btn-xs btn-s" onclick="genReport('${pk}')">📄 生成评审报告</button> <button class="btn btn-xs btn-s" onclick="switchTab(0)">↩ 回首页</button></div>`;
+h+=`<div class="sec"><div class="stitle">📤 DQE产出 (${ts.dl.filter((_,i)=>showAll||isDqeTask(p,pk,i)).length}项) <button class="btn btn-xs btn-s" onclick="viewArchive('${pk}')">📂</button> <button class="btn btn-xs btn-s" onclick="showBatch()">☑</button></div>`;
+ts.dl.forEach((item,i)=>{if(!showAll&&!isDqeTask(p,pk,i))return;const t=gtk(p,pk,i);const yc=item.y==='r'?'rp':item.y==='t'?'tt':item.y==='d'?'tc':'tr',yl=item.y==='r'?'报告':item.y==='t'?'测试':item.y==='d'?'标准':'评审',rc=t.risk_status==='red'?'r':t.risk_status==='yellow'?'y':'g',tpl=TM[pk]&&TM[pk][i],isDQE=isDqeTask(p,pk,i);
+h+=`<div class="ti"><input type="checkbox" style="cursor:pointer;accent-color:var(--p)" onclick="event.stopPropagation();toggleBatch('${pk}',${i})"><div class="chk${t.completed?' done':''}" onclick="toggleCheck('${pk}',${i})"></div><span class="rd ${rc}" onclick="event.stopPropagation();openRisk('${pk}',${i})"></span><span class="tnm">${E(item.t)} <span class="tag tag-${yc}">${yl}</span>${t.completed?' ✓':''}${t.waiting_status?' ⏳':''}${!isDQE?` <span style="font-size:8px;color:var(--t3)">[${(t.task_role||'DQE')}]</span>`:''}</span>${tpl&&isDQE?`<a href="templates/${getTplFile(tpl)}" target="_blank" style="text-decoration:none"><span class="tag" style="background:#fffbeb;color:#b45309">📋${tpl}</span></a>`:''}${isDQE?`<button class="btn btn-xs btn-s" onclick="event.stopPropagation();uploadFile('${pk}',${i})">📤</button>`:''}</div>`});
+h+=`</div><div class="sec"><div class="stitle">📥 PM/Sourcing</div>`;ts.pm.forEach(x=>h+=`<div style="font-size:11px;color:var(--t2);padding:3px 0">🟡 ${E(x)}</div>`);
+h+=`</div><div class="sec"><div class="stitle">📥 供应商</div>`;ts.sp.forEach(x=>h+=`<div style="font-size:11px;color:var(--t2);padding:3px 0">🟣 ${E(x)}</div>`);h+=`</div>`;
+document.getElementById('detailBody').innerHTML=h;document.getElementById('detail').classList.add('open');document.getElementById('doverlay').classList.add('show')}
+function closeDetail(){document.getElementById('detail').classList.remove('open');document.getElementById('doverlay').classList.remove('show')}
+
+// ======== Project Master Data ========
+const DEFAULT_MASTER=[{id:'md_1',project_code:'D1-OFN260301Z',project_name:'一种双面加热控温帽子烫印设备',members:'向婷, 高玉伟, 刘丽',start_date:'2026-03-01',end_date:'2026-07-31'},{id:'md_2',project_code:'E3-GLG260301Z',project_name:'一种自动识别的智能红酒收藏管理制冷柜项目',members:'陈鹤冲, 向婷, 高玉伟, 曾水林, 余烨翔',start_date:'2026-03-01',end_date:'2027-07-01'},{id:'md_3',project_code:'D1-OFN260427Z',project_name:'一种带有负压供墨及白墨防沉积的供墨装置',members:'廖华, 向婷, 高玉伟, 刘丽, 吴温婷',start_date:'2026-05-01',end_date:'2026-09-30'},{id:'md_4',project_code:'F1-251204Z',project_name:'3018i雕刻机',members:'陈文钊, 周廉发, 苏振业, 林家豪, 黄季发, 陈曦, 张',start_date:'2026-01-04',end_date:'2026-05-30'},{id:'md_5',project_code:'F1-251003Z',project_name:'5W立式桌面打标机',members:'周廉发, 林家豪, 吕靖雯, 陈曦, 苏振业, 黄季发',start_date:'2025-12-01',end_date:'2026-06-30'},{id:'md_6',project_code:'F1-260201Z',project_name:'20W迷你激光雕刻机',members:'周廉发, 林家豪, 陈曦, 苏振业, 黄季发',start_date:'2026-02-01',end_date:'2026-07-31'},{id:'md_7',project_code:'F1-260302Z',project_name:'小型化激光雕刻机Pro',members:'陈文钊, 苏振业, 林家豪, 黄季发, 陈曦',start_date:'2026-03-01',end_date:'2026-08-30'},{id:'md_8',project_code:'F1-260401Z',project_name:'智能激光雕刻机MAX',members:'周廉发, 陈文钊, 林家豪, 苏振业, 黄季发, 陈曦',start_date:'2026-04-01',end_date:'2026-09-30'},{id:'md_9',project_code:'E3-GLG260501Z',project_name:'一种智能温控酒柜优化项目',members:'陈鹤冲, 高玉伟, 曾水林',start_date:'2026-05-01',end_date:'2027-05-01'},{id:'md_10',project_code:'D1-OFN260501Z',project_name:'一种高效UV固化供墨系统',members:'廖华, 向婷, 吴温婷',start_date:'2026-05-01',end_date:'2026-10-31'},{id:'md_11',project_code:'F1-260501Z',project_name:'双头台式激光打标机',members:'苏振业, 周廉发, 陈曦, 林家豪',start_date:'2026-05-01',end_date:'2026-11-30'},{id:'md_12',project_code:'AE-LUO260227Z',project_name:'一种便携式户外储能电源',members:'黄季发, 陈曦, 苏振业',start_date:'2026-02-27',end_date:'2026-08-31'},{id:'md_13',project_code:'AE-LUO260301Z',project_name:'大容量家用储能系统',members:'黄季发, 苏振业, 陈文钊',start_date:'2026-03-01',end_date:'2026-11-30'},{id:'md_14',project_code:'AE-LUO260401Z',project_name:'太阳能光伏储能一体机',members:'黄季发, 陈文钊, 陈曦, 苏振业',start_date:'2026-04-01',end_date:'2027-01-31'},{id:'md_15',project_code:'R1-YYD260301Z',project_name:'智能音频眼镜2代',members:'向婷, 刘丽, 高玉伟',start_date:'2026-03-01',end_date:'2026-09-30'},{id:'md_16',project_code:'R1-YYD260401Z',project_name:'骨传导耳机Pro',members:'向婷, 廖华, 高玉伟',start_date:'2026-04-01',end_date:'2026-12-31'},{id:'md_17',project_code:'R1-YYD260501Z',project_name:'主动降噪头戴耳机',members:'向婷, 廖华, 吴温婷, 曾水林',start_date:'2026-05-01',end_date:'2027-01-31'},{id:'md_18',project_code:'AE-LUO260502Z',project_name:'户外移动电源2000W',members:'黄季发, 陈文钊, 苏振业',start_date:'2026-05-01',end_date:'2026-12-31'}];
+
+function loadMasterData(){
+  try{
+    // Try Supabase first
+    sb.from('project_master').select('*').order('project_code').then(({data})=>{
+      if(data&&data.length>0){masterData=data;localStorage.setItem('dqe_master',JSON.stringify(data))}
+      else{
+        const ls=localStorage.getItem('dqe_master');
+        masterData=ls?JSON.parse(ls):[...DEFAULT_MASTER];
+      }
+      updateMasterDropdown();
+    }).catch(()=>{
+      const ls=localStorage.getItem('dqe_master');
+      masterData=ls?JSON.parse(ls):[...DEFAULT_MASTER];
+      updateMasterDropdown();
+    });
+  }catch(e){
+    const ls=localStorage.getItem('dqe_master');
+    masterData=ls?JSON.parse(ls):[...DEFAULT_MASTER];
+    updateMasterDropdown();
+  }
+}
+
+function updateMasterDropdown(){
+  const sel=document.getElementById('pmaster');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- 选择已有项目 --</option>'+masterData.map(m=>`<option value="${m.id}"${m.id===cur?' selected':''}>${m.project_code} — ${m.project_name.slice(0,25)}</option>`).join('')+'<option value="__new__">+ 手动输入新项目</option>';
+}
+function onMasterSelect(){
+  const id=document.getElementById('pmaster').value;
+  if(id==='__new__'){document.getElementById('pname').value='';document.getElementById('pmaster').style.opacity='0.5';document.getElementById('pname').focus();return}
+  if(!id){document.getElementById('pname').value='';document.getElementById('pmaster').style.opacity='1';return}
+  document.getElementById('pmaster').style.opacity='1';
+  const m=masterData.find(x=>x.id===id);
+  if(m){document.getElementById('pname').value=m.project_name;document.getElementById('pdate').value=m.start_date||dayjs().format('YYYY-MM-DD');}
+}
+
+function showModal(){document.getElementById('modal').classList.add('show');document.getElementById('pdate').value=dayjs().format('YYYY-MM-DD');document.getElementById('pmaster').style.opacity='1';updateMasterDropdown();document.getElementById('pmaster').focus()}
+function hideModal(){document.getElementById('modal').classList.remove('show')}
+
+async function create(){
+  const n=document.getElementById('pname').value.trim();if(!n){T('请输入名称');return}
+  const tp=document.getElementById('ptype').value,mid=document.getElementById('pmaster').value;
+  const sup=document.getElementById('psup').value.trim(),sd=document.getElementById('pdate').value;
+  T('⏳ 创建中...');
+  try{
+    const body={name:n,category:tp,project_type:tp,supplier:sup,start_date:sd};
+    if(mid&&mid!=='__new__')body.master_id=mid;
+    const{data,error:upErr}=await sb.from('projects').insert(body).select().single();
+    if(upErr){
+      // Retry without master_id and project_type
+      delete body.master_id;delete body.project_type;
+      const{data:d2,error:upErr2}=await sb.from('projects').insert(body).select().single();
+      if(upErr2){T('❌ 创建失败: '+upErr2.message.slice(0,25),'error');return}
+      const proj=d2;
+      for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+      projects.unshift(proj);hideModal();selP(proj.id);T('☁ 已创建','success');return
+    }
+    const proj=data;
+    for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+    projects.unshift(proj);hideModal();selP(proj.id);T('☁ 已创建','success')
+  }catch(e){T('❌ '+(e.message||'失败').slice(0,25),'error');console.error(e)}
+}
+
+// ======== Tab 6: Master Data ========
+function findLinkedProject(masterItem){
+  // Match by master_id or by project_code embedded in name
+  return projects.find(p=>p.master_id===masterItem.id) ||
+         projects.find(p=>p.name&&p.name.includes(masterItem.project_code)) ||
+         projects.find(p=>p.name===masterItem.project_name) || null;
+}
+
+async function renderMasterData(ca){
+  // Build linkage map
+  const linkedMap={};projects.forEach(p=>{if(p.master_id)linkedMap[p.master_id]=p.id});
+  // Also match by name/code for backward compat
+  masterData.forEach(m=>{if(!linkedMap[m.id]){const lp=findLinkedProject(m);if(lp)linkedMap[m.id]=lp.id}});
+
+  let h=`<div class="sh-row"><h3>🗂 项目主数据管理 (${masterData.length}项)</h3><div style="display:flex;gap:6px"><button class="btn btn-s btn-xs" onclick="showMasterModal()">+ 新增</button><button class="btn btn-s btn-xs" onclick="expMaster()">📥 导出</button><button class="btn btn-s btn-xs" onclick="validateMaster()">🔍 校验</button><button class="btn btn-s btn-xs" onclick="importMaster()">📤 导入</button></div></div>`;
+  h+=`<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--p);color:#fff"><th style="padding:8px;text-align:left">项目编号</th><th style="padding:8px;text-align:left">项目名称</th><th style="padding:8px;text-align:left">成员</th><th style="padding:8px">开始</th><th style="padding:8px">结束</th><th style="padding:8px">DQE关联</th><th style="padding:8px">操作</th></tr>`;
+  masterData.forEach(m=>{
+    const linked=linkedMap[m.id];
+    const linkCell=linked
+      ?`<span style="color:var(--g);cursor:pointer;font-weight:500" onclick="event.stopPropagation();selP('${linked}')">✅ 已关联</span>`
+      :`<span style="color:var(--t3)">--</span> <button class="btn btn-xs btn-p" style="font-size:8px;padding:2px 5px" onclick="event.stopPropagation();quickCreateFromMaster('${m.id}')">+创建</button>`;
+    h+=`<tr style="border-bottom:1px solid var(--b);cursor:pointer" onclick="${linked?`selP('${linked}')`:`quickCreateFromMaster('${m.id}')`}"><td style="padding:8px;font-weight:500;font-family:monospace">${E(m.project_code)}</td><td style="padding:8px">${E(m.project_name)}</td><td style="padding:8px;font-size:10px;color:var(--t2)">${E(m.members||'')}</td><td style="padding:8px;text-align:center">${m.start_date||'-'}</td><td style="padding:8px;text-align:center">${m.end_date||'-'}</td><td style="padding:8px;text-align:center">${linkCell}</td><td style="padding:8px;text-align:center"><button class="btn btn-xs btn-s" onclick="event.stopPropagation();editMaster('${m.id}')">✏️</button><button class="btn btn-xs btn-s" style="color:var(--d)" onclick="event.stopPropagation();delMaster('${m.id}')">✕</button></td></tr>`});
+  h+=`</table></div>`;
+  ca.innerHTML=h}
+
+async function quickCreateFromMaster(mid){
+  const m=masterData.find(x=>x.id===mid);if(!m)return;
+  if(!confirm(`为「${m.project_name}」创建 DQE 项目？\n编号：${m.project_code}\n日期：${m.start_date||'--'}`))return;
+  T('⏳ 创建中...');
+  try{
+    const body={name:m.project_name,category:'消费电子',project_type:'消费电子',supplier:'',start_date:m.start_date||dayjs().format('YYYY-MM-DD')};
+    try{body.master_id=m.id}catch(e){}
+    const{data,error:upErr}=await sb.from('projects').insert(body).select().single();
+    if(upErr){
+      // Retry without master_id
+      delete body.master_id;
+      const{data:retryData,error:retryErr}=await sb.from('projects').insert(body).select().single();
+      if(retryErr){T('❌ '+retryErr.message.slice(0,30),'error');console.error(retryErr);return}
+      const rd=retryData;
+      for(const pk of['gate1','gate2','gate3','gate4','gate5']){await sb.from('gate_tracking').upsert({project_id:rd.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+      projects.unshift(rd);selP(rd.id);renderList();updateQuickBar();T('☁ 已创建并跳转','success');return
+    }
+    const d=data;
+    for(const pk of['gate1','gate2','gate3','gate4','gate5']){await sb.from('gate_tracking').upsert({project_id:d.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+    projects.unshift(d);selP(d.id);renderList();updateQuickBar();T('☁ 已创建并跳转','success')
+  }catch(err){T('❌ '+((err.message||'').slice(0,30)),'error');console.error('QuickCreate:',err)}
+}
+
+function validateMaster(){
+  let errors=[],warns=[];
+  const codes=new Set();
+  masterData.forEach((m,i)=>{
+    if(!m.project_code||!m.project_code.trim())errors.push(`第${i+1}行：项目编号为空`);
+    else{
+      if(codes.has(m.project_code.trim()))errors.push(`第${i+1}行：编号「${m.project_code}」重复`);
+      codes.add(m.project_code.trim());
+    }
+    if(!m.project_name||!m.project_name.trim())errors.push(`第${i+1}行：项目名称为空`);
+    if(m.start_date&&isNaN(Date.parse(m.start_date)))warns.push(`第${i+1}行：开始日期格式异常：「${m.start_date}」`);
+    if(m.end_date&&isNaN(Date.parse(m.end_date)))warns.push(`第${i+1}行：结束日期格式异常：「${m.end_date}」`);
+    if(m.start_date&&m.end_date&&Date.parse(m.start_date)>Date.parse(m.end_date))warns.push(`第${i+1}行：开始日期(${m.start_date})晚于结束日期(${m.end_date})`);
+  });
+  if(errors.length===0&&warns.length===0){T(`✅ 全部${masterData.length}条数据校验通过`,'success')}
+  else{
+    let msg='';
+    if(errors.length)msg+=`❌ ${errors.length}个错误:\n${errors.slice(0,5).join('\n')}${errors.length>5?'\n...还有'+(errors.length-5)+'个':''}`;
+    if(warns.length)msg+=`\n\n⚠️ ${warns.length}个警告:\n${warns.slice(0,5).join('\n')}${warns.length>5?'\n...还有'+(warns.length-5)+'个':''}`;
+    alert(msg);
+    if(errors.length)T('❌ 发现'+errors.length+'个错误，请检查','error')
+  }
+}
+
+function importMaster(){
+  const input=document.createElement('input');input.type='file';input.accept='.csv,.xlsx,.xls';
+  input.onchange=async(e)=>{
+    const f=e.target.files[0];if(!f)return;
+    T('⏳ 解析中...');
+    try{
+      const text=await f.text();
+      const lines=text.split('\n').filter(l=>l.trim());
+      if(lines.length<2){T('❌ 至少需要表头+1行数据','error');return}
+      const headers=lines[0].split(',').map(h=>h.trim());
+      const ci={};
+      ['项目编号','project_code','code'].forEach(k=>{const i=headers.findIndex(h=>h.includes(k));if(i>=0)ci.code=i});
+      ['项目名称','project_name','name'].forEach(k=>{const i=headers.findIndex(h=>h.includes(k));if(i>=0)ci.name=i});
+      ['成员','members','member'].forEach(k=>{const i=headers.findIndex(h=>h.includes(k));if(i>=0)ci.members=i});
+      ['开始','start'].forEach(k=>{const i=headers.findIndex(h=>h.includes(k));if(i>=0)ci.start=i});
+      ['结束','end','结项'].forEach(k=>{const i=headers.findIndex(h=>h.includes(k));if(i>=0)ci.end=i});
+      if(ci.code===undefined||ci.name===undefined){T('❌ 需包含项目编号和项目名称列','error');return}
+      let imported=0;
+      for(let r=1;r<lines.length;r++){
+        const cols=lines[r].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+        const code=cols[ci.code],name=cols[ci.name];
+        if(!code||!name)continue;
+        const existing=masterData.findIndex(m=>m.project_code===code);
+        const row={project_code:code,project_name:name,members:ci.members>=0?cols[ci.members]||'':'',start_date:ci.start>=0?cols[ci.start]||'':'',end_date:ci.end>=0?cols[ci.end]||'':''};
+        if(existing>=0){masterData[existing]=row}else{row.id='md_'+Date.now()+'_'+imported;masterData.push(row)}
+        imported++;
+      }
+      localStorage.setItem('dqe_master',JSON.stringify(masterData));
+      updateMasterDropdown();renderTab();T(`✅ 导入${imported}条`,'success')
+    }catch(err){T('❌ 解析失败','error');console.error(err)}
+  };input.click()
+}
+
+function showMasterModal(m){
+  const isEdit=!!m;
+  document.getElementById('mId').value=m?m.id:'';
+  document.getElementById('mCode').value=m?m.project_code:'';
+  document.getElementById('mName').value=m?m.project_name:'';
+  document.getElementById('mMembers').value=m?m.members||'':'';
+  document.getElementById('mStart').value=m?m.start_date||'':'';
+  document.getElementById('mEnd').value=m?m.end_date||'':'';
+  document.getElementById('masterModal').classList.add('show')
+}
+
+async function saveMaster(){
+  const id=document.getElementById('mId').value,code=document.getElementById('mCode').value.trim(),name=document.getElementById('mName').value.trim();
+  if(!code){T('❌ 项目编号不能为空','error');return}
+  if(!name){T('❌ 项目名称不能为空','error');return}
+  // Check duplicate
+  const dup=masterData.find(m=>m.project_code===code&&m.id!==id);
+  if(dup){T('❌ 编号「'+code+'」已存在','error');return}
+  const start=document.getElementById('mStart').value,end=document.getElementById('mEnd').value;
+  if(start&&isNaN(Date.parse(start))){T('❌ 开始日期格式错误','error');return}
+  if(end&&isNaN(Date.parse(end))){T('❌ 结束日期格式错误','error');return}
+  if(start&&end&&Date.parse(start)>Date.parse(end)){T('❌ 开始日期不能晚于结束日期','error');return}
+
+  const row={id:id||('md_'+Date.now()),project_code:code,project_name:name,members:document.getElementById('mMembers').value.trim(),start_date:start||null,end_date:end||null};
+  if(id){const idx=masterData.findIndex(x=>x.id===id);if(idx>=0)masterData[idx]=row}
+  else{masterData.push(row)}
+  localStorage.setItem('dqe_master',JSON.stringify(masterData));
+  try{const{id:_id,...rest}=row;if(id){await sb.from('project_master').update({...rest,updated_at:new Date().toISOString()}).eq('id',id).catch(()=>{})}else{await sb.from('project_master').insert(rest).catch(()=>{})}}catch(e){}
+  updateMasterDropdown();document.getElementById('masterModal').classList.remove('show');renderTab();T('已保存','success')
+}
+
+async function delMaster(id){
+  if(!confirm('确定删除该项目主数据？'))return;
+  masterData=masterData.filter(x=>x.id!==id);
+  localStorage.setItem('dqe_master',JSON.stringify(masterData));
+  try{await sb.from('project_master').delete().eq('id',id).catch(()=>{})}catch(e){}
+  updateMasterDropdown();renderTab();T('已删除')}
+
+function editMaster(id){const m=masterData.find(x=>x.id===id);if(m)showMasterModal(m)}
+
+function expMaster(){
+  const csv='项目编号,项目名称,成员,开始日期,结束日期\n'+masterData.map(r=>[r.project_code,r.project_name,r.members,r.start_date||'',r.end_date||''].join(',')).join('\n');
+  const b=new Blob(['\ufeff'+csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='项目主数据_'+dayjs().format('YYYY-MM-DD')+'.csv';a.click();T('已导出CSV')
+}
+
+// ======== Tab 7: DQE 风险预防知识库 ========
+const DEFAULT_FMEA=[
+{id:'fr_1',rule_code:'FMEA-001',knowledge_category:'模具工艺',failure_mode:'外壳注塑缩水/拉白',design_requirements:'模具需增加2度拔模斜度，浇口位置需避开外观面，保压压力需≥80MPa',dqe_inspection:'强制要求供应商提供DFM模流分析报告，试模时现场确认缩水等级≤V1'},
+{id:'fr_2',rule_code:'FMEA-002',knowledge_category:'模具工艺',failure_mode:'结构件装配干涉/间隙超标',design_requirements:'Boss柱高度公差±0.05mm，卡扣弹性变形量≤0.3mm',dqe_inspection:'首件需进行3D扫描对比，公差需在±0.1mm内'},
+{id:'fr_3',rule_code:'FMEA-003',knowledge_category:'硬件功能设计',failure_mode:'主板宽电压烧毁',design_requirements:'电源输入端需增加TVS管+PPTC自恢复保险，耐压≥36V/2A',dqe_inspection:'EVT阶段进行±30%电压波动测试，连续运行24h无异常'},
+{id:'fr_4',rule_code:'FMEA-004',knowledge_category:'硬件功能设计',failure_mode:'ESD静电击穿IC',design_requirements:'信号接口需添加ESD保护器件(≥8KV接触/15KV空气)，PCB layout保留屏蔽罩焊盘',dqe_inspection:'EVT阶段进行IEC 61000-4-2 ESD测试，每个测试点正负各10次'},
+{id:'fr_5',rule_code:'FMEA-005',knowledge_category:'可靠性测试方案',failure_mode:'跌落测试后内部焊点断裂',design_requirements:'BGA/大尺寸QFN底部需填充underfill，连接器需点胶加固',dqe_inspection:'DVT阶段进行1.5m 6面各2次跌落测试，跌落前后进行X-ray对比'},
+{id:'fr_6',rule_code:'FMEA-006',knowledge_category:'可靠性测试方案',failure_mode:'按键/接口寿命不足',design_requirements:'按键需选用≥100万次寿命规格，USB-C接口需≥1万次插拔',dqe_inspection:'DVT阶段抽样≥20pcs进行加速寿命测试，需达到宣称寿命×1.2'},
+{id:'fr_7',rule_code:'FMEA-007',knowledge_category:'合规与安规',failure_mode:'FCC/CE认证未通过',design_requirements:'PCB layout需预留共模电感和Y电容位置，时钟线需包地处理',dqe_inspection:'EVT阶段进行预扫EMC，辐射/传导裕量需≥6dB'},
+{id:'fr_8',rule_code:'FMEA-008',knowledge_category:'合规与安规',failure_mode:'ROHS/REACH不合规',design_requirements:'所有物料需签核ROHS/REACH合规声明，高风险物料需提供第三方检测报告',dqe_inspection:'DVT前完成所有物料ROHS/REACH合规证据收集，核验证书有效期'}
+];
+let failureLib=[],fmeaRules=[...DEFAULT_FMEA],avoidChecks=[],rkbSub=0,avoidFilter='',_rkbType='failure';
+
+function loadRiskKB(){
+  const fl=localStorage.getItem('dqe_failure_lib'),fr=localStorage.getItem('dqe_fmea_rules'),ac=localStorage.getItem('dqe_avoid_checks');
+  failureLib=fl?JSON.parse(fl):[];
+  fmeaRules=fr?JSON.parse(fr):[...DEFAULT_FMEA];
+  avoidChecks=ac?JSON.parse(ac):[];
+  // Also try Supabase
+  try{
+    sb.from('failure_library').select('*').then(({data})=>{if(data&&data.length){failureLib=data;localStorage.setItem('dqe_failure_lib',JSON.stringify(data))}}).catch(()=>{});
+    sb.from('fmea_rules').select('*').then(({data})=>{if(data&&data.length){fmeaRules=data;localStorage.setItem('dqe_fmea_rules',JSON.stringify(data))}}).catch(()=>{});
+    sb.from('avoidance_checklist').select('*').then(({data})=>{if(data&&data.length){avoidChecks=data;localStorage.setItem('dqe_avoid_checks',JSON.stringify(data))}}).catch(()=>{});
+  }catch(e){}
+}
+
+function renderRiskKB(ca){
+  const subTabs=['⚠️ 失效库','📖 FMEA规则','✅ 避坑检查'];
+  const btns=['addFailure()','addFmea()','addAvoid()'];
+  let h=`<div class="sh-row"><h3>🛡️ DQE 风险预防知识库</h3></div>`;
+  h+=`<div style="display:flex;gap:4px;margin-bottom:12px">`;
+  subTabs.forEach((t,i)=>{const cls=rkbSub===i?'btn-p':'btn-ghost';h+=`<button class="btn btn-xs ${cls}" onclick="rkbSub=${i};renderTab()">${t}</button>`});
+  h+=`<div style="margin-left:auto"><button class="btn btn-p btn-xs" onclick="${btns[rkbSub]}">+ 新增</button></div></div>`;
+  if(rkbSub===0)renderFailureLib(h,ca);else if(rkbSub===1)renderFmeaRules(h,ca);else renderAvoidChecks(h,ca);
+}
+
+function renderFailureLib(h,ca){
+  h+=`<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+  <tr style="background:var(--d);color:#fff"><th style="padding:6px">项目</th><th style="padding:6px">阶段</th><th style="padding:6px">分类</th><th style="padding:6px">失效现象</th><th style="padding:6px">根因</th><th style="padding:6px">8D/附件</th><th style="padding:6px">操作</th></tr>`;
+  failureLib.forEach((r,i)=>{const hasFile=r.report_name;
+  h+=`<tr style="border-bottom:1px solid var(--b)"><td style="padding:6px;font-size:10px">${E(r.project_name||r.project_code||'')}</td><td style="padding:6px"><span class="tag" style="background:${r.failure_stage==='售后客诉'?'#fef2f2':'#fffbeb'}">${r.failure_stage||''}</span></td><td style="padding:6px">${r.risk_category||''}</td><td style="padding:6px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E(r.failure_desc||'')}</td><td style="padding:6px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E(r.root_cause||'')}</td><td style="padding:6px;text-align:center">${hasFile?`<span style="cursor:pointer;color:var(--p)" onclick="openRkbFile('failure',${i})">📄 ${E(r.report_name)}</span>`:`<button class="btn btn-xs btn-s" onclick="event.stopPropagation();uploadRkbFile('failure',${i})">📤</button>`}</td><td style="padding:6px"><button class="btn btn-xs btn-s" onclick="editFailure(${i})">✏️</button><button class="btn btn-xs btn-s" style="color:var(--d)" onclick="delRkbItem('failure',${i})">✕</button></td></tr>`});
+  h+=`</table></div>`;ca.innerHTML=h}
+
+function renderFmeaRules(h,ca){
+  h+=`<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+  <tr style="background:#8b5cf6;color:#fff"><th style="padding:6px">编号</th><th style="padding:6px">类目</th><th style="padding:6px">失效模式</th><th style="padding:6px">设计要求</th><th style="padding:6px">DQE检查手段</th><th style="padding:6px">操作</th></tr>`;
+  fmeaRules.forEach((r,i)=>{h+=`<tr style="border-bottom:1px solid var(--b)"><td style="padding:6px;font-family:monospace;font-size:10px">${r.rule_code||''}</td><td style="padding:6px"><span class="tag tag-tr">${r.knowledge_category||''}</span></td><td style="padding:6px;font-weight:500">${E(r.failure_mode||'')}</td><td style="padding:6px;max-width:220px;font-size:10px">${E(r.design_requirements||'')}</td><td style="padding:6px;max-width:220px;font-size:10px">${E(r.dqe_inspection||'')}</td><td style="padding:6px"><button class="btn btn-xs btn-s" onclick="editFmea(${i})">✏️</button><button class="btn btn-xs btn-s" style="color:var(--d)" onclick="delRkbItem('fmea',${i})">✕</button></td></tr>`});
+  h+=`</table></div>`;ca.innerHTML=h}
+
+function renderAvoidChecks(h,ca){
+  const phases=['','G1','G2','G3','G4','G5'];
+  h+=`<div style="display:flex;gap:4px;margin-bottom:8px">阶段筛选：`;
+  phases.forEach(p=>{h+=`<button class="btn btn-xs ${avoidFilter===p?'btn-p':'btn-ghost'}" onclick="avoidFilter='${p}';renderTab()">${p||'全部'}</button>`});
+  h+=`</div>`;
+  h+=`<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+  <tr style="background:var(--g);color:#fff"><th style="padding:6px">任务</th><th style="padding:6px">项目</th><th style="padding:6px">阶段</th><th style="padding:6px">引用规则</th><th style="padding:6px">DQE检查</th><th style="padding:6px">结论</th><th style="padding:6px">遗留风险</th><th style="padding:6px">操作</th></tr>`;
+  avoidChecks.filter(r=>!avoidFilter||r.review_phase===avoidFilter).forEach((r,i)=>{const rc=r.review_conclusion==='Pass'?'var(--g)':r.review_conclusion==='Fail'?'var(--d)':'var(--t3)';
+  const ref=fmeaRules.find(f=>f.id===r.rule_id);
+  h+=`<tr style="border-bottom:1px solid var(--b)"><td style="padding:6px;font-weight:500">${E(r.task_name||'')}</td><td style="padding:6px;font-size:10px">${E(r.project_name||r.project_code||'')}</td><td style="padding:6px"><span class="badge b${r.review_phase?r.review_phase.slice(1):'1'}">${r.review_phase||''}</span></td><td style="padding:6px;font-size:10px">${ref?ref.rule_code: '--'}</td><td style="padding:6px;font-size:10px;color:var(--t2);max-width:150px">${ref?E(ref.dqe_inspection||'').slice(0,30):'--'}</td><td style="padding:6px;font-weight:600;color:${rc}">${r.review_conclusion||'N/A'}</td><td style="padding:6px;font-size:10px;color:var(--t2);max-width:80px">${E(r.remaining_risk||'--')}</td><td style="padding:6px"><button class="btn btn-xs btn-s" onclick="editAvoid(${i})">✏️</button><button class="btn btn-xs btn-s" style="color:var(--d)" onclick="delRkbItem('avoid',${i})">✕</button></td></tr>`});
+  h+=`</table></div>`;ca.innerHTML=h}
+
+// --- 失效库：独立新增/编辑 ---
+function addFailure(){openFm('failure')}
+function editFailure(idx){openFm('failure',idx)}
+function addFmea(){openFm('fmea')}
+function editFmea(idx){openFm('fmea',idx)}
+function addAvoid(){openFm('avoid')}
+function editAvoid(idx){openFm('avoid',idx)}
+
+function openFm(type,idx){
+  const isEdit=typeof idx==='number';
+  const labels={failure:'⚠️ 失效库',fmea:'📖 FMEA规则',avoid:'✅ 避坑检查'};
+  let arr=type==='failure'?failureLib:type==='fmea'?fmeaRules:avoidChecks;
+  let r=isEdit?arr[idx]:null;
+  // Title
+  _rkbType=type;
+  document.getElementById('rkbTitle').textContent=(isEdit?'编辑':'新增')+' — '+labels[type];
+  document.getElementById('rkbType').value=type;
+  document.getElementById('rkbIdx').value=isEdit?idx:'';
+  // Show/hide fields
+  document.querySelectorAll('.rkb-field').forEach(el=>el.style.display='none');
+  if(type==='failure')document.querySelectorAll('.rkb-field.failure').forEach(el=>el.style.display='');
+  else if(type==='fmea')document.querySelectorAll('.rkb-field.fmea').forEach(el=>el.style.display='');
+  else{document.querySelectorAll('.rkb-field.avoid').forEach(el=>el.style.display='');
+    // Populate rule dropdown for avoid
+    const sel=document.getElementById('rkb_rule_id');
+    sel.innerHTML='<option value="">-- 选择FMEA规则 --</option>'+fmeaRules.map(fr=>`<option value="${fr.id}">${fr.rule_code}: ${E(fr.failure_mode.slice(0,20))}</option>`).join('');
+    sel.onchange=function(){const rid=this.value;const rule=fmeaRules.find(fr=>fr.id===rid);document.getElementById('rulePreview').textContent=rule?rule.dqe_inspection:''};
+  }
+  // Project dropdowns
+  const opts='<option value="">-- 选择 --</option>'+masterData.map(m=>`<option value="${m.project_code}">${m.project_code} — ${m.project_name.slice(0,20)}</option>`).join('');
+  const s1=document.getElementById('rkb_project_code'),s2=document.getElementById('rkb_project_code2');
+  if(s1){s1.innerHTML=opts;if(r){s1.value=r.project_code||'';s1.onchange()}}
+  if(s2){s2.innerHTML=opts;if(r){s2.value=r.project_code||'';s2.onchange()}}
+  // Fill values
+  if(r){
+    const fs=['project_code','project_name','failure_stage','risk_category','failure_desc','root_cause','rule_code','knowledge_category','failure_mode','design_requirements','dqe_inspection','task_name','review_phase','rule_id','review_conclusion','remaining_risk'];
+    fs.forEach(f=>{const el=document.getElementById('rkb_'+f)||document.getElementById('rkb_'+f+'2');if(el&&r[f]!=null){if(el.tagName==='SELECT')el.value=r[f];else el.value=r[f]}});
+  }else{
+    document.querySelectorAll('#rkbForm input,#rkbForm select,#rkbForm textarea').forEach(el=>{if(el.tagName==='SELECT')el.selectedIndex=0;else el.value=''});
+    document.getElementById('rkb_review_conclusion').value='N/A';
+    document.getElementById('rulePreview').textContent='';
+  }
+  document.getElementById('rkbModal').classList.add('show');
+}
+
+function submitRkb(){
+  const type=_rkbType||document.getElementById('rkbType').value||'failure';
+  const idx=document.getElementById('rkbIdx').value||'';
+  const row={id:idx||('rkb_'+Date.now())};
+  const fields=['project_code','project_name','failure_stage','risk_category','failure_desc','root_cause','report_path','report_name','rule_code','knowledge_category','failure_mode','design_requirements','dqe_inspection','task_name','review_phase','rule_id','review_conclusion','remaining_risk'];
+  fields.forEach(f=>{const el=document.getElementById('rkb_'+f)||document.getElementById('rkb_'+f+'2');if(el)row[f]=el.value});
+  if(type==='avoid'){row.project_code=row.project_code||document.getElementById('rkb_project_code2')?.value;row.project_name=row.project_name||document.getElementById('rkb_project_name2')?.value}
+  
+  if(type==='failure'){
+    if(!row.failure_desc){T('❌ 失效现象必填','error');return}
+    if(idx)failureLib[parseInt(idx)]=row;else failureLib.unshift(row);
+    localStorage.setItem('dqe_failure_lib',JSON.stringify(failureLib));
+    rkbSub=0;
+  }else if(type==='fmea'){
+    if(!row.failure_mode){T('❌ 失效模式必填','error');return}
+    if(!row.rule_code)row.rule_code='FMEA-'+(fmeaRules.length+1);
+    if(idx)fmeaRules[parseInt(idx)]=row;else fmeaRules.push(row);
+    localStorage.setItem('dqe_fmea_rules',JSON.stringify(fmeaRules));
+    rkbSub=1;
+  }else{
+    if(!row.task_name){T('❌ 任务名称必填','error');return}
+    if(idx)avoidChecks[parseInt(idx)]=row;else avoidChecks.push(row);
+    localStorage.setItem('dqe_avoid_checks',JSON.stringify(avoidChecks));
+    rkbSub=2;
+  }
+  document.getElementById('rkbModal').classList.remove('show');
+  // refresh current tab only, no navigation
+  if(curTab===5)renderRiskKB(document.getElementById('content'));
+  T('已保存','success')
+}
+
+function delRkbItem(type,idx){
+  if(!confirm('确定删除？'))return;
+  if(type==='failure'){failureLib.splice(idx,1);localStorage.setItem('dqe_failure_lib',JSON.stringify(failureLib))}
+  else if(type==='fmea'){fmeaRules.splice(idx,1);localStorage.setItem('dqe_fmea_rules',JSON.stringify(fmeaRules))}
+  else{avoidChecks.splice(idx,1);localStorage.setItem('dqe_avoid_checks',JSON.stringify(avoidChecks))}
+  if(curTab===5)renderRiskKB(document.getElementById('content'));
+  T('已删除')
+}
+
+function uploadRkbFile(type,idx){
+  let arr;if(type==='failure')arr=failureLib;else if(type==='fmea')arr=fmeaRules;else arr=avoidChecks;
+  const row=arr[idx];if(!row)return;
+  const input=document.createElement('input');input.type='file';input.accept='*/*';
+  input.onchange=async(e)=>{
+    const f=e.target.files[0];if(!f)return;if(f.size>10*1024*1024){T('⚠️ 不超过10MB','error');return}
+    T('⏳ 上传中...');
+    try{
+      const ext=f.name.includes('.')?f.name.split('.').pop().slice(0,10):'bin';
+      const fp=`rkb/${type}/${idx}_${Date.now()}.${ext}`;
+      const{data:upData,error:upErr}=await sb.storage.from('dqe-documents').upload(fp,f,{upsert:true,contentType:f.type||'application/octet-stream'});
+      if(upErr){T('❌ '+upErr.message.slice(0,25),'error');return}
+      row.report_path=fp;row.report_name=f.name;
+      if(type==='failure')localStorage.setItem('dqe_failure_lib',JSON.stringify(failureLib));
+      else if(type==='fmea')localStorage.setItem('dqe_fmea_rules',JSON.stringify(fmeaRules));
+      else localStorage.setItem('dqe_avoid_checks',JSON.stringify(avoidChecks));
+      if(curTab===5)renderRiskKB(document.getElementById('content'));T('☁ 附件上传完成 ✓','success')
+    }catch(err){T('❌ '+((err.message||'').slice(0,25)),'error')}
+  };input.click()
+}
+function openRkbFile(type,idx){
+  let arr;if(type==='failure')arr=failureLib;else arr=avoidChecks;
+  const row=arr[idx];if(!row||!row.report_path)return;
+  const{data}=sb.storage.from('dqe-documents').getPublicUrl(row.report_path);
+  if(data?.publicUrl)window.open(data.publicUrl,'_blank')
+}
+
+// ======== Upload ========
+async function uploadFile(pk,i){const p=gp();const input=document.createElement('input');input.type='file';input.accept='*/*';input.capture='environment';input.onchange=async(e)=>{const f=e.target.files[0];if(!f)return;if(f.size>50*1024*1024){T('⚠️ 文件不超过50MB','error');return}T('⏳ 上传中...');try{const ext=f.name.includes('.')?f.name.split('.').pop().replace(/[^a-zA-Z0-9]/g,'').slice(0,10):'bin';const safePart=Date.now()+'_'+Math.random().toString(36).slice(2,8);const fp=`${p.id}/${pk}/${i}_${safePart}.${ext}`;const{data:upData,error:upErr}=await sb.storage.from('dqe-documents').upload(fp,f,{upsert:true,contentType:f.type||'application/octet-stream'});if(upErr){const msg=upErr.message||'';T('❌ '+(msg.includes('not found')||msg.includes('404')?'存储桶未创建':msg.slice(0,25)),'error');console.error('Upload:',upErr);return}const{error:docErr}=await sb.from('documents').insert({project_id:p.id,phase_key:pk,item_index:i,document_name:f.name,storage_path:fp,file_size:f.size,file_mime:f.type||'',status:'uploaded',document_type:'report'});if(docErr)console.error('Doc insert:',docErr);await saveTask(p,pk,i,true);await handleGateComplete(p,pk);await loadTasks();await loadGates();opd(pk);renderTab();renderList();T('☁ 上传完成 ✓','success')}catch(err){T('❌ '+((err.message||'').slice(0,25)),'error');console.error('Upload:',err)}};input.click()}
+async function openFile(fp){const{data}=await sb.storage.from('dqe-documents').getPublicUrl(fp);if(data?.publicUrl)window.open(data.publicUrl,'_blank')}
+
+// ======== Risk / Wait / Check ========
+function openRisk(pk,i){_pk=pk;_idx=i;const p=gp(),t=gtk(p,pk,i);document.getElementById('riskStat').value=t.risk_status;document.getElementById('riskNote').value=t.risk_note;document.getElementById('riskModal').classList.add('show')}
+async function saveRisk(){const p=gp();const stat=document.getElementById('riskStat').value,note=document.getElementById('riskNote').value;const t=gtk(p,_pk,_idx);await saveTaskS(p,_pk,_idx,t.completed,stat,note,t.waiting_status,t.waiting_for,t.waiting_since);await loadTasks();document.getElementById('riskModal').classList.remove('show');opd(_pk);renderTab();T('已更新','success')}
+function openWait(pk,i){_pk=pk;_idx=i;document.getElementById('waitFor').value='';document.getElementById('waitWhat').value='';document.getElementById('waitModal').classList.add('show')}
+async function saveWait(){const p=gp();const wf=document.getElementById('waitFor').value,ww=document.getElementById('waitWhat').value;await saveTaskS(p,_pk,_idx,false,'green','',true,wf+' - '+ww,new Date().toISOString());await loadTasks();document.getElementById('waitModal').classList.remove('show');renderTab();T('已标记')}
+async function resolveWait(pk,i){const p=gp();const t=gtk(p,pk,i);await saveTaskS(p,pk,i,t.completed,t.risk_status,t.risk_note,false,'',null);await loadTasks();renderTab();T('已解决','success')}
+async function toggleCheck(pk,i){const p=gp();const t=gtk(p,pk,i);
+if(!t.completed){await saveTaskS(p,pk,i,true,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since);await handleGateComplete(p,pk)}else{await saveTaskS(p,pk,i,false,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since)}
+await loadTasks();await loadGates();opd(pk);renderTab();renderList()}
+async function saveTask(p,pk,i,completed){const t=gtk(p,pk,i);await saveTaskS(p,pk,i,completed,t.risk_status||'green',t.risk_note||'',t.waiting_status||false,t.waiting_for||'',t.waiting_since||null)}
+async function saveTaskS(p,pk,i,completed,rs,rn,ws,wf,wsince){const t=gtk(p,pk,i);await sb.from('checklist_items').upsert({project_id:p.id,phase_key:pk,item_index:i,completed,risk_status:rs,risk_note:rn,waiting_status:ws,waiting_for:wf,waiting_since:wsince,task_role:t.task_role||'DQE',updated_at:new Date().toISOString()},{onConflict:'project_id,phase_key,item_index'})}
+async function handleGateComplete(p,pk){await loadTasks();let allDqeDone=true;PT[pk].dl.forEach((_,i)=>{if(isDqeTask(p,pk,i)&&!gtk(p,pk,i).completed)allDqeDone=false});
+if(allDqeDone&&PT[pk].dl.some((_,i)=>isDqeTask(p,pk,i))){const{error}=await sb.from('gate_tracking').upsert({project_id:p.id,phase_key:pk,completed_at:new Date().toISOString(),planned_days:PC[pk].d,started_at:gt(p,pk).started_at||new Date().toISOString()},{onConflict:'project_id,phase_key'});
+if(!error){const next=Object.keys(PC)[Object.keys(PC).indexOf(pk)+1];if(next){await sb.from('gate_tracking').upsert({project_id:p.id,phase_key:next,started_at:new Date().toISOString(),planned_days:PC[next].d},{onConflict:'project_id,phase_key'});T(`🎉 ${PC[pk].s} DQE任务完成，进入 ${PC[next].s}`,'success')}else T('🎉 全部DQE任务完成','success')}}}
+
+// ======== Batch / Archive / Report ========
+function toggleBatch(pk,i){const key=pk+'_'+i;batchSel.has(key)?batchSel.delete(key):batchSel.add(key)}
+function showBatch(){document.getElementById('batchCount').textContent=batchSel.size;document.getElementById('batchModal').classList.add('show')}
+async function batchAction(action){const p=gp();if(!p)return;
+const items=Array.from(batchSel).map(k=>{const[pk,i]=k.split('_');return{pk,i:parseInt(i)}});
+if(action==='complete'){for(const it of items)await saveTask(p,it.pk,it.i,true);T(`✅ ${items.length}项已完成`,'success')}
+else if(action==='wait'){const wf=prompt('等待谁？','供应商')||'供应商';for(const it of items)await sb.from('checklist_items').upsert({project_id:p.id,phase_key:it.pk,item_index:it.i,waiting_status:true,waiting_for:wf,waiting_since:new Date().toISOString()},{onConflict:'project_id,phase_key,item_index'});T(`⏳ ${items.length}项已标记`)}
+else if(action==='download'){for(const it of items){const{data}=await sb.from('documents').select('storage_path').eq('project_id',p.id).eq('phase_key',it.pk).eq('item_index',it.i).limit(1);if(data&&data.length)openFile(data[0].storage_path)}}
+document.getElementById('batchModal').classList.remove('show');await loadTasks();const pk=getCurPhase(p).key;opd(pk);renderTab();renderList()}
+async function viewArchive(pk){const p=gp();const{data}=await sb.from('documents').select('*').eq('project_id',p.id).eq('phase_key',pk).order('uploaded_at',{ascending:false});
+document.getElementById('rpTitle').textContent='归档 · '+PC[pk].n;
+let h='';if(!data||!data.length)h='<p style="font-size:12px;color:var(--t3)">暂无文件</p>';
+else h=`<table style="width:100%"><tr style="background:var(--p);color:#fff"><th>文件</th><th>大小</th><th>时间</th><th>操作</th></tr>`+data.map(d=>`<tr><td>📄 ${E(d.document_name)}</td><td>${fs(d.file_size)}</td><td>${dayjs(d.uploaded_at).format('M/D HH:mm')}</td><td><button class="btn btn-xs btn-s" onclick="openFile('${d.storage_path}')">查看</button></td></tr>`).join('')+'</table>';
+document.getElementById('rpContent').innerHTML=h;document.getElementById('reportModal').classList.add('show')}
+async function genReport(pk){const p=gp(),ts=PT[pk];let h=`<h2>阶段评审报告</h2><p><strong>项目：</strong>${E(p.name)} | <strong>阶段：</strong>${PC[pk].s} ${PC[pk].n}</p><p><strong>生成时间：</strong>${dayjs().format('YYYY-MM-DD HH:mm')}</p><hr>`;
+h+=`<h3>任务完成情况</h3><table><tr><th>任务</th><th>类型</th><th>状态</th></tr>`;
+ts.dl.forEach((item,i)=>{const t=gtk(p,pk,i);const yl=item.y==='r'?'报告':item.y==='t'?'测试':item.y==='d'?'标准':'评审';h+=`<tr><td>${E(item.t)}</td><td>${yl}</td><td>${t.completed?'✅':'⬜'}${t.risk_note?' · ⚠️'+E(t.risk_note):''}</td></tr>`});
+h+=`</table><h3>风险记录</h3>`;let risks=[];ts.dl.forEach((item,i)=>{const t=gtk(p,pk,i);if(t.risk_status!=='green')risks.push({name:item.t,status:t.risk_status,note:t.risk_note})});
+if(!risks.length)h+='<p>无风险记录</p>';else h+=`<ul>${risks.map(r=>`<li>${r.status==='red'?'🔴':'🟡'} ${E(r.name)}: ${E(r.note||'')}</li>`).join('')}</ul>`;
+const{data}=await sb.from('documents').select('*').eq('project_id',p.id).eq('phase_key',pk).order('uploaded_at',{ascending:false});
+h+=`<h3>附件清单</h3>`;if(!data||!data.length)h+='<p>无附件</p>';else h+=`<table><tr><th>文件名</th><th>大小</th><th>时间</th></tr>${data.map(d=>`<tr><td>📄 ${E(d.document_name)}</td><td>${fs(d.file_size)}</td><td>${dayjs(d.uploaded_at).format('M/D HH:mm')}</td></tr>`).join('')}</table>`;
+document.getElementById('rpTitle').textContent='评审报告 · '+PC[pk].s;
+document.getElementById('rpContent').innerHTML=h;document.getElementById('reportModal').classList.add('show')}
+function copyReminder(task,who){navigator.clipboard.writeText(`【催办】\n任务：${task}\n等待：${who}\n请尽快提供。谢谢！`).then(()=>T('已复制到剪贴板','success'))}
+
+// ======== Project CRUD ========
+async function exp(){const ep=[];for(const p of projects){let items={};Object.keys(taskMap).filter(k=>k.startsWith(p.id+'_')).forEach(k=>items[k]=taskMap[k]);ep.push({...p,_tasks:items})}const b=new Blob([JSON.stringify(ep,null,2)]);const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`dqe-${dayjs().format('YYYY-MM-DD')}.json`;a.click();T('已导出')}
+
+// ======== Init ========
+window.onload=function(){sb=window.supabase.createClient(SU,SK);loadP();loadMasterData();loadRiskKB();
+// Theme
+const saved=localStorage.getItem('dqe_theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+document.documentElement.setAttribute('data-theme',saved);
+document.getElementById('themeBtn').textContent=saved==='dark'?'☀️':'🌙';
+// Smart check every 5 min
+setInterval(checkOverdue,300000);setTimeout(checkOverdue,5000);
+// Keyboard
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideModal();closeDetail();document.querySelectorAll('.modal').forEach(m=>m.classList.remove('show'));return}if(e.ctrlKey||e.metaKey){if(e.key==='n'){e.preventDefault();showModal()}else if(e.key>='1'&&e.key<='6'){e.preventDefault();switchTab(parseInt(e.key)-1)}else if(e.key==='k'){e.preventDefault();document.getElementById('quickProj').focus()}else if(e.key==='s'){e.preventDefault();const m=document.getElementById('rkbModal');if(m.classList.contains('show')){submitRkb()}}}})}
+function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('dqe_theme',next);document.getElementById('themeBtn').textContent=next==='dark'?'☀️':'🌙';}
+function toggleFold(el){el.classList.toggle('collapsed');const body=el.nextElementSibling;if(body)body.classList.toggle('collapsed')}
+function dragStart(e){e.dataTransfer.effectAllowed='move';e.currentTarget.classList.add('dragging')}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');const grid=document.getElementById('statGrid');if(!grid)return;
+const cards=[...grid.querySelectorAll('.card[draggable]')];cardOrder=cards.map(c=>parseInt(c.dataset.card));localStorage.setItem('dqe_card_order',JSON.stringify(cardOrder))}
+// Make grid support drop
+document.addEventListener('dragover',e=>{const g=document.getElementById('statGrid');if(g&&g.contains(e.target)){e.preventDefault();const dragging=document.querySelector('.card.dragging');if(!dragging)return;const cards=[...g.querySelectorAll('.card:not(.dragging)')];const after=cards.reduce((closest,child)=>{const box=child.getBoundingClientRect(),offset=e.clientY-box.top-box.height/2;if(offset<0&&offset>closest.offset){return{offset,element:child}}return closest},{offset:Number.NEGATIVE_INFINITY}).element;if(after)g.insertBefore(dragging,after);else g.appendChild(dragging)}})
+function checkOverdue(){
+  if(!Notification||Notification.permission!=='granted')return;
+  const today=dayjs();let overdue=[];
+  projects.forEach(p=>{Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((ts,i)=>{if(!isDqeTask(p,pk,i))return;const t=gtk(p,pk,i);if(!t.completed&&!t.waiting_status&&t.deadline){const d=dayjs(t.deadline).diff(today,'day');if(d<0)overdue.push({name:ts.t,project:p.name,days:Math.abs(d)})}})})});
+  if(overdue.length){const top=overdue.sort((a,b)=>b.days-a.days).slice(0,3);new Notification('DQE 任务逾期提醒',{body:top.map(o=>`${o.name}（${o.project}）逾期${o.days}天`).join('\n'),icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚠️</text></svg>'})}
+}
+async function requestNotify(){if(Notification&&Notification.permission==='default'){const p=await Notification.requestPermission();if(p==='granted')T('🔔 通知已开启，任务逾期时自动提醒','success')}}
+setTimeout(requestNotify,3000);
+function searchAll(q){
+  if(!q||q.length<2)return[];
+  let res=[];
+  const ql=q.toLowerCase();
+  projects.forEach(p=>{if(p.name.toLowerCase().includes(ql)||(p.category||'').toLowerCase().includes(ql))res.push({type:'项目',text:p.name,tab:0,fn:()=>selP(p.id)})});
+  Object.entries(PC).forEach(([pk])=>{PT[pk].dl.forEach((ts,i)=>{if(ts.t.toLowerCase().includes(ql))res.push({type:'DQE任务',text:`${ts.t}（${PC[pk].n}）`,tab:0,fn:()=>opd(pk)})})});
+  fmeaRules.forEach(r=>{if(r.failure_mode.toLowerCase().includes(ql)||r.rule_code.toLowerCase().includes(ql))res.push({type:'FMEA规则',text:r.rule_code+': '+r.failure_mode,tab:5,fn:()=>{rkbSub=1}})});
+  failureLib.forEach(r=>{if((r.failure_desc||'').toLowerCase().includes(ql)||(r.project_name||'').toLowerCase().includes(ql))res.push({type:'失效案例',text:(r.project_name||'')+': '+(r.failure_desc||'').slice(0,30),tab:5,fn:()=>{rkbSub=0}})});
+  return res.slice(0,10);
+}
+function showSearchResults(q){
+  const d=document.getElementById('searchDrop');
+  if(!q||q.length<2){d.style.display='none';return}
+  const res=searchAll(q);
+  if(!res.length){d.innerHTML='<div style="padding:10px;font-size:11px;color:var(--t3)">无结果</div>'}else{
+    d.innerHTML=res.map((r,i)=>`<div style="padding:8px 12px;cursor:pointer;font-size:11px;border-bottom:1px solid var(--b)" onclick="doSearchAction(${i})"><span class="tag" style="margin-right:6px">${r.type}</span>${E(r.text)}</div>`).join('');
+    window._searchRes=res}
+  d.style.display='block';
+}
+function doSearchAction(i){const r=(window._searchRes||[])[i];if(!r)return;document.getElementById('searchDrop').style.display='none';document.getElementById('globalSearch').value='';switchTab(r.tab||0);if(r.fn)r.fn()}
+</script></body></html>
