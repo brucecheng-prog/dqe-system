@@ -756,11 +756,11 @@ async function quickCreateFromMaster(mid){
       const{data:retryData,error:retryErr}=await sb.from('projects').insert(body).select().single();
       if(retryErr){T('❌ '+retryErr.message.slice(0,30),'error');console.error(retryErr);return}
       const rd=retryData;
-      for(const pk of['gate1','gate2','gate3','gate4','gate5']){await sb.from('gate_tracking').upsert({project_id:rd.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+      for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:rd.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})}
       projects.unshift(rd);selP(rd.id);renderList();updateQuickBar();T('☁ 已创建并跳转','success');return
     }
     const d=data;
-    for(const pk of['gate1','gate2','gate3','gate4','gate5']){await sb.from('gate_tracking').upsert({project_id:d.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+    for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:d.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})}
     projects.unshift(d);selP(d.id);renderList();updateQuickBar();T('☁ 已创建并跳转','success')
   }catch(err){T('❌ '+((err.message||'').slice(0,30)),'error');console.error('QuickCreate:',err)}
 }
@@ -1054,10 +1054,10 @@ async function toggleCheck(pk,i){const p=gp();const t=gtk(p,pk,i);
 if(!t.completed){await saveTaskS(p,pk,i,true,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since);await handleGateComplete(p,pk)}else{await saveTaskS(p,pk,i,false,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since)}
 await loadTasks();await loadGates();opd(pk);renderTab();renderList()}
 async function saveTask(p,pk,i,completed){const t=gtk(p,pk,i);await saveTaskS(p,pk,i,completed,t.risk_status||'green',t.risk_note||'',t.waiting_status||false,t.waiting_for||'',t.waiting_since||null)}
-async function saveTaskS(p,pk,i,completed,rs,rn,ws,wf,wsince){const t=gtk(p,pk,i);await sb.from('checklist_items').upsert({project_id:p.id,phase_key:pk,item_index:i,completed,risk_status:rs,risk_note:rn,waiting_status:ws,waiting_for:wf,waiting_since:wsince,task_role:t.task_role||'DQE',updated_at:new Date().toISOString()},{onConflict:'project_id,phase_key,item_index'})}
+async function saveTaskS(p,pk,i,completed,rs,rn,ws,wf,wsince){const t=gtk(p,pk,i);sb.from('checklist_items').upsert({project_id:p.id,phase_key:pk,item_index:i,completed,risk_status:rs,risk_note:rn,waiting_status:ws,waiting_for:wf,waiting_since:wsince,task_role:t.task_role||'DQE',updated_at:new Date().toISOString()}).catch(()=>{})}
 async function handleGateComplete(p,pk){await loadTasks();let allDqeDone=true;PT[pk].dl.forEach((_,i)=>{if(isDqeTask(p,pk,i)&&!gtk(p,pk,i).completed)allDqeDone=false});
-if(allDqeDone&&PT[pk].dl.some((_,i)=>isDqeTask(p,pk,i))){const{error}=await sb.from('gate_tracking').upsert({project_id:p.id,phase_key:pk,completed_at:new Date().toISOString(),planned_days:PC[pk].d,started_at:gt(p,pk).started_at||new Date().toISOString()},{onConflict:'project_id,phase_key'});
-if(!error){const next=Object.keys(PC)[Object.keys(PC).indexOf(pk)+1];if(next){await sb.from('gate_tracking').upsert({project_id:p.id,phase_key:next,started_at:new Date().toISOString(),planned_days:PC[next].d},{onConflict:'project_id,phase_key'});T(`🎉 ${PC[pk].s} DQE任务完成，进入 ${PC[next].s}`,'success')}else T('🎉 全部DQE任务完成','success')}}}
+if(allDqeDone&&PT[pk].dl.some((_,i)=>isDqeTask(p,pk,i))){sb.from('gate_tracking').upsert({project_id:p.id,phase_key:pk,completed_at:new Date().toISOString(),planned_days:PC[pk].d,started_at:gt(p,pk).started_at||new Date().toISOString()}).catch(()=>{});
+const next=Object.keys(PC)[Object.keys(PC).indexOf(pk)+1];if(next){sb.from('gate_tracking').upsert({project_id:p.id,phase_key:next,started_at:new Date().toISOString(),planned_days:PC[next].d}).catch(()=>{});T(`🎉 ${PC[pk].s} DQE任务完成，进入 ${PC[next].s}`,'success')}else T('🎉 全部DQE任务完成','success')}
 
 // ======== Batch / Archive / Report ========
 function toggleBatch(pk,i){const key=pk+'_'+i;batchSel.has(key)?batchSel.delete(key):batchSel.add(key)}
@@ -1065,7 +1065,7 @@ function showBatch(){document.getElementById('batchCount').textContent=batchSel.
 async function batchAction(action){const p=gp();if(!p)return;
 const items=Array.from(batchSel).map(k=>{const[pk,i]=k.split('_');return{pk,i:parseInt(i)}});
 if(action==='complete'){for(const it of items)await saveTask(p,it.pk,it.i,true);T(`✅ ${items.length}项已完成`,'success')}
-else if(action==='wait'){const wf=prompt('等待谁？','供应商')||'供应商';for(const it of items)await sb.from('checklist_items').upsert({project_id:p.id,phase_key:it.pk,item_index:it.i,waiting_status:true,waiting_for:wf,waiting_since:new Date().toISOString()},{onConflict:'project_id,phase_key,item_index'});T(`⏳ ${items.length}项已标记`)}
+else if(action==='wait'){const wf=prompt('等待谁？','供应商')||'供应商';for(const it of items)sb.from('checklist_items').upsert({project_id:p.id,phase_key:it.pk,item_index:it.i,waiting_status:true,waiting_for:wf,waiting_since:new Date().toISOString()}).catch(()=>{});T(`⏳ ${items.length}项已标记`)}
 else if(action==='download'){for(const it of items){const{data}=await sb.from('documents').select('storage_path').eq('project_id',p.id).eq('phase_key',it.pk).eq('item_index',it.i).limit(1);if(data&&data.length)openFile(data[0].storage_path)}}
 document.getElementById('batchModal').classList.remove('show');await loadTasks();const pk=getCurPhase(p).key;opd(pk);renderTab();renderList()}
 async function viewArchive(pk){const p=gp();const{data}=await sb.from('documents').select('*').eq('project_id',p.id).eq('phase_key',pk).order('uploaded_at',{ascending:false});
@@ -1103,7 +1103,8 @@ function dragStart(e){e.dataTransfer.effectAllowed='move';e.currentTarget.classL
 function dragEnd(e){e.currentTarget.classList.remove('dragging');const grid=document.getElementById('statGrid');if(!grid)return;
 const cards=[...grid.querySelectorAll('.card[draggable]')];cardOrder=cards.map(c=>parseInt(c.dataset.card));localStorage.setItem('dqe_card_order',JSON.stringify(cardOrder))}
 // Make grid support drop
-document.addEventListener('dragover',e=>{const g=document.getElementById('statGrid');if(g&&g.contains(e.target)){e.preventDefault();const dragging=document.querySelector('.card.dragging');if(!dragging)return;const cards=[...g.querySelectorAll('.card:not(.dragging)')];const after=cards.reduce((closest,child)=>{const box=child.getBoundingClientRect(),offset=e.clientY-box.top-box.height/2;if(offset<0&&offset>closest.offset){return{offset,element:child}}return closest},{offset:Number.NEGATIVE_INFINITY}).element;if(after)g.insertBefore(dragging,after);else g.appendChild(dragging)}})
+document.addEventListener('dragover',e=>{const g=document.getElementById('statGrid');if(g&&g.contains(e.target)){e.preventDefault();const dragging=document.querySelector('.card.dragging');if(!dragging)return;const cards=[...g.querySelectorAll('.card:not(.dragging)')];const after=cards.reduce((closest,child)=>{const box=child.getBoundingClientRect(),offset=e.clientY-box.top-box.height/2;if(offset<0&&offset>closest.offset){return{offset,element:child}}return closest},{offset:Number.NEGATIVE_INFINITY}).element;if(after)g.insertBefore(dragging,after);else g.appendChild(dragging)}});
+}  /* clos onload */
 function checkOverdue(){
   if(!Notification||Notification.permission!=='granted')return;
   const today=dayjs();let overdue=[];
