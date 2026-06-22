@@ -703,11 +703,15 @@ async function create(){
       const{data:d2,error:upErr2}=await sb.from('projects').insert(body).select().single();
       if(upErr2){T('❌ 创建失败: '+upErr2.message.slice(0,25),'error');return}
       const proj=d2;
-      for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+      for(const pk of['gate1','gate2','gate3','gate4','gate5']){
+        sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})
+      }
       projects.unshift(proj);hideModal();selP(proj.id);T('☁ 已创建','success');return
     }
     const proj=data;
-    for(const pk of['gate1','gate2','gate3','gate4','gate5']){sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d},{onConflict:'project_id,phase_key'}).catch(()=>{})}
+    for(const pk of['gate1','gate2','gate3','gate4','gate5']){
+      sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})
+    }
     projects.unshift(proj);hideModal();selP(proj.id);T('☁ 已创建','success')
   }catch(e){T('❌ '+(e.message||'失败').slice(0,25),'error');console.error(e)}
 }
