@@ -319,12 +319,13 @@ function gp(){return projects.find(p=>p.id===ap)}
 
 // ======== Data Loading ========
 async function loadP(){
-const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});if(!data)return;projects=data;
+try{const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});if(data){projects=data}}
+catch(e){console.error('loadP:',e)}
 await loadTasks();await loadGates();renderList();updateQuickBar();
 if(projects.length>0){if(!ap)selP(projects[0].id);}else{ap=null;renderTab()}
 }
-async function loadTasks(){taskMap={};const{data}=await sb.from('checklist_items').select('*');(data||[]).forEach(r=>{taskMap[r.project_id+'_'+r.phase_key+'_'+r.item_index]={completed:r.completed||false,risk_status:r.risk_status||'green',risk_note:r.risk_note||'',waiting_status:r.waiting_status||false,waiting_for:r.waiting_for||'',waiting_since:r.waiting_since||null,deadline:r.deadline||null,task_role:r.task_role||'DQE'}})}
-async function loadGates(){gateMap={};const{data}=await sb.from('gate_tracking').select('*');(data||[]).forEach(r=>{gateMap[r.project_id+'_'+r.phase_key]={started_at:r.started_at,completed_at:r.completed_at,planned_days:r.planned_days||PC[r.phase_key].d}})}
+async function loadTasks(){taskMap={};try{const{data}=await sb.from('checklist_items').select('*');(data||[]).forEach(r=>{taskMap[r.project_id+'_'+r.phase_key+'_'+r.item_index]={completed:r.completed||false,risk_status:r.risk_status||'green',risk_note:r.risk_note||'',waiting_status:r.waiting_status||false,waiting_for:r.waiting_for||'',waiting_since:r.waiting_since||null,deadline:r.deadline||null,task_role:r.task_role||'DQE'}})}catch(e){console.error('loadTasks:',e)}}
+async function loadGates(){gateMap={};try{const{data}=await sb.from('gate_tracking').select('*');(data||[]).forEach(r=>{gateMap[r.project_id+'_'+r.phase_key]={started_at:r.started_at,completed_at:r.completed_at,planned_days:r.planned_days||PC[r.phase_key].d}})}catch(e){console.error('loadGates:',e)}}
 function renderList(){document.getElementById('pc').textContent=projects.length+' 项目';
 const l=document.getElementById('plist');if(!projects.length){l.innerHTML='<div style="padding:16px;text-align:center;color:var(--t3);font-size:11px">暂无项目</div>';return}
 l.innerHTML=projects.map(p=>{const a=p.id===ap?' ac':'';const ds=dqeStats(p);
@@ -690,6 +691,7 @@ function hideModal(){document.getElementById('modal').classList.remove('show')}
 
 async function create(){
   const n=document.getElementById('pname').value.trim();if(!n){T('请输入名称');return}
+  if(!sb||!sb.from){T('❌ 数据库连接失败，请刷新重试','error');return}
   const tp=document.getElementById('ptype').value,mid=document.getElementById('pmaster').value;
   const sup=document.getElementById('psup').value.trim(),sd=document.getElementById('pdate').value;
   T('⏳ 创建中...');
@@ -698,10 +700,9 @@ async function create(){
     if(mid&&mid!=='__new__')body.master_id=mid;
     const{data,error:upErr}=await sb.from('projects').insert(body).select().single();
     if(upErr){
-      // Retry without master_id and project_type
       delete body.master_id;delete body.project_type;
       const{data:d2,error:upErr2}=await sb.from('projects').insert(body).select().single();
-      if(upErr2){T('❌ 创建失败: '+upErr2.message.slice(0,25),'error');return}
+      if(upErr2){T('❌ 创建失败: '+upErr2.message.slice(0,30),'error');return}
       const proj=d2;
       for(const pk of['gate1','gate2','gate3','gate4','gate5']){
         sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})
@@ -713,7 +714,7 @@ async function create(){
       sb.from('gate_tracking').upsert({project_id:proj.id,phase_key:pk,started_at:pk==='gate1'?new Date().toISOString():null,planned_days:PC[pk].d}).catch(()=>{})
     }
     projects.unshift(proj);hideModal();selP(proj.id);T('☁ 已创建','success')
-  }catch(e){T('❌ '+(e.message||'失败').slice(0,25),'error');console.error(e)}
+  }catch(e){T('❌ '+(e?.message||'未知错误').slice(0,30),'error');console.error('create:',e)}
 }
 
 // ======== Tab 6: Master Data ========
@@ -1054,7 +1055,7 @@ async function toggleCheck(pk,i){const p=gp();const t=gtk(p,pk,i);
 if(!t.completed){await saveTaskS(p,pk,i,true,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since);await handleGateComplete(p,pk)}else{await saveTaskS(p,pk,i,false,t.risk_status,t.risk_note,t.waiting_status,t.waiting_for,t.waiting_since)}
 await loadTasks();await loadGates();opd(pk);renderTab();renderList()}
 async function saveTask(p,pk,i,completed){const t=gtk(p,pk,i);await saveTaskS(p,pk,i,completed,t.risk_status||'green',t.risk_note||'',t.waiting_status||false,t.waiting_for||'',t.waiting_since||null)}
-async function saveTaskS(p,pk,i,completed,rs,rn,ws,wf,wsince){const t=gtk(p,pk,i);sb.from('checklist_items').upsert({project_id:p.id,phase_key:pk,item_index:i,completed,risk_status:rs,risk_note:rn,waiting_status:ws,waiting_for:wf,waiting_since:wsince,task_role:t.task_role||'DQE',updated_at:new Date().toISOString()}).catch(()=>{})}
+async function saveTaskS(p,pk,i,completed,rs,rn,ws,wf,wsince){const t=gtk(p,pk,i);try{sb.from('checklist_items').upsert({project_id:p.id,phase_key:pk,item_index:i,completed,risk_status:rs,risk_note:rn,waiting_status:ws,waiting_for:wf,waiting_since:wsince,task_role:t.task_role||'DQE',updated_at:new Date().toISOString()}).catch(()=>{})}catch(e){console.error('saveTaskS:',e)}}
 async function handleGateComplete(p,pk){await loadTasks();let allDqeDone=true;PT[pk].dl.forEach((_,i)=>{if(isDqeTask(p,pk,i)&&!gtk(p,pk,i).completed)allDqeDone=false});
 if(allDqeDone&&PT[pk].dl.some((_,i)=>isDqeTask(p,pk,i))){sb.from('gate_tracking').upsert({project_id:p.id,phase_key:pk,completed_at:new Date().toISOString(),planned_days:PC[pk].d,started_at:gt(p,pk).started_at||new Date().toISOString()}).catch(()=>{});
 const next=Object.keys(PC)[Object.keys(PC).indexOf(pk)+1];if(next){sb.from('gate_tracking').upsert({project_id:p.id,phase_key:next,started_at:new Date().toISOString(),planned_days:PC[next].d}).catch(()=>{});T(`🎉 ${PC[pk].s} DQE任务完成，进入 ${PC[next].s}`,'success')}else T('🎉 全部DQE任务完成','success')}
