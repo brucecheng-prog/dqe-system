@@ -691,7 +691,6 @@ function hideModal(){document.getElementById('modal').classList.remove('show')}
 
 async function create(){
   const n=document.getElementById('pname').value.trim();if(!n){T('请输入名称');return}
-  if(!sb||!sb.from){T('❌ 数据库连接失败，请刷新重试','error');return}
   const tp=document.getElementById('ptype').value,mid=document.getElementById('pmaster').value;
   const sup=document.getElementById('psup').value.trim(),sd=document.getElementById('pdate').value;
   T('⏳ 创建中...');
