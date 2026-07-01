@@ -278,8 +278,25 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 .inline-edit{display:none;margin-top:4px}
 .inline-edit.show{display:flex;gap:4px;align-items:center}
 .inline-edit select,.inline-edit input{padding:4px 6px;border:1px solid var(--b);border-radius:4px;font-size:11px;font-family:inherit;outline:none}
+/* 连接状态条 */
+.conn-bar{position:fixed;top:0;left:0;right:0;z-index:9999;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;gap:6px;transition:background .3s}
+.conn-bar.ok{background:#dcfce7;color:#166534}
+.conn-bar.err{background:#fee2e2;color:#991b1b}
+.conn-bar.warn{background:#fef3c7;color:#92400e}
+.conn-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.conn-bar.ok .dot{background:#22c55e}
+.conn-bar.err .dot{background:#ef4444;animation:pulse 1.5s infinite}
+.conn-bar.warn .dot{background:#f59e0b;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* 数据迁移面板 */
+.migrate-card{border:1px dashed var(--p);border-radius:var(--r);padding:20px;margin:12px 0;text-align:center;background:#f8f9ff}
+[data-theme="dark"] .migrate-card{background:#1a1d27}
+.migrate-card h4{margin:0 0 8px;color:var(--p);font-size:14px}
+.migrate-card p{margin:0 0 12px;font-size:12px;color:var(--t2)}
 </style></head>
 <body>
+<!-- 连接状态条 -->
+<div id="connBar" class="conn-bar" style="display:none"><span class="dot"></span><span id="connText">检测中…</span></div>
 
 <!-- Sidebar -->
 <div class="sb" id="sidebar">
@@ -314,7 +331,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 </div>
 
 <!-- Content -->
-<div class="mn-c" id="content"><div class="empty"><h3>选择或新建项目</h3><p>左侧项目列表或点击 + 新建 开始</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button></div></div>
+<div class="mn-c" id="content"><div class="empty" id="emptyState"><h3>选择或新建项目</h3><p>左侧项目列表或点击 + 新建 开始</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button></div></div>
 </div>
 
 <!-- Detail Panel -->
@@ -944,19 +961,42 @@ function initSupabase(){
     const sdk=(typeof globalThis!=='undefined'&&globalThis.supabase)||(typeof window!=='undefined'&&window.supabase)||(typeof supabase!=='undefined'&&supabase)||null;
     if(sdk&&typeof sdk.createClient==='function'){
       sb=sdk.createClient(SU,SK);
+      testSupabaseConnection();
       return true
     }
     console.error('Supabase SDK unavailable');
-  }catch(e){console.error('initSupabase:',e)}
+    showConnStatus('err','Supabase SDK 未加载，已降级为本地模式');
+  }catch(e){console.error('initSupabase:',e);showConnStatus('err','Supabase 初始化失败：'+e.message)}
   sb=null;
   return false
+}
+async function testSupabaseConnection(){
+  const bar=document.getElementById('connBar'),txt=document.getElementById('connText');
+  if(!bar||!txt)return;
+  bar.style.display='flex';bar.className='conn-bar warn';txt.textContent='正在连接数据库…';
+  try{
+    const t0=performance.now();
+    const{data,error}=await sb.from('projects').select('id').limit(1);
+    if(error)throw error;
+    const ms=Math.round(performance.now()-t0);
+    showConnStatus('ok','已连接 Supabase · '+ms+'ms');
+    setTimeout(()=>{bar.style.display='none'},2500);
+  }catch(e){
+    console.error('Supabase ping:',e);
+    showConnStatus('err','数据库连接失败：'+e.message+' · 运行本地降级模式');
+  }
+}
+function showConnStatus(status,msg){
+  const bar=document.getElementById('connBar'),txt=document.getElementById('connText');
+  if(!bar||!txt)return;
+  bar.style.display='flex';bar.className='conn-bar '+status;txt.textContent=msg;
 }
 
 // ======== Data Loading ========
 async function loadP(){
 if(!hasSb()){projects=loadLocal(LS_PROJECTS,[]);await loadTasks();await loadGates();renderList();updateQuickBar();if(projects.length>0){if(!ap)selP(projects[0].id)}else{ap=null;renderTab()}return}
 try{const{data}=await sb.from('projects').select('*').order('created_at',{ascending:false});if(data){projects=mergeProjects(data,loadLocal(LS_PROJECTS,[]));saveLocal(LS_PROJECTS,projects)}}
-catch(e){console.error('loadP:',e);projects=loadLocal(LS_PROJECTS,[])}
+catch(e){console.error('loadP:',e);showConnStatus('err','数据库加载失败：'+e.message+' · 降级本地模式');projects=loadLocal(LS_PROJECTS,[])}
 await loadTasks();await loadGates();renderList();updateQuickBar();
 if(projects.length>0){if(!ap)selP(projects[0].id);}else{ap=null;renderTab()}
 }
@@ -1017,7 +1057,7 @@ async function deleteProject(id){
     saveLocal(LS_PROJECTS,projects);saveLocal(LS_TASKS,taskMap);saveLocal(LS_GATES,gateMap);
     if(ap===id)ap=projects.length?projects[0].id:null;
     renderList();updateQuickBar();
-    if(ap)selP(ap);else{document.getElementById('content').innerHTML='<div class="empty"><h3>选择或新建项目</h3></div>';switchTab(0)}
+    if(ap)selP(ap);else{document.getElementById('content').innerHTML=renderEmptyState();switchTab(0)}
     T('☁ 已删除','success');
   }catch(e){T('❌ 删除失败，请重试','error');console.error(e)}
 }
@@ -1033,10 +1073,57 @@ if(p)h+=`<span class="sep">›</span><span onclick="switchTab(0)">${E(p.name)}</
 h+=`<span class="sep">›</span><span>${labels[curTab]}</span>`;
 b.innerHTML=h}
 function renderTab(){const p=gp(),ca=document.getElementById('content');batchSel.clear();
-if(!p){ca.innerHTML='<div class="empty"><h3>选择或新建项目</h3><p>左侧选择项目或点击下方按钮开始工作</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button></div>';return}
+if(!p){ca.innerHTML=renderEmptyState();return}
 if(curTab===0)renderHome(p,ca);else if(curTab===1)renderHealth(ca);else if(curTab===2)renderWaiting(p,ca);else if(curTab===3)renderWorkflow(ca);else if(curTab===4)renderMasterData(ca);else if(curTab===5)renderRiskKB(ca)}
 
-// ======== HOME (Tab 0) ========
+// 空状态渲染（带诊断信息）
+function renderEmptyState(){
+  const hasLocal=!!(loadLocal(LS_PROJECTS,[]).length);
+  const isHttps=location.protocol==='https:';
+  const origin=location.origin;
+  let diag='';
+  if(!hasLocal&&isHttps){
+    diag=`<div class="migrate-card"><h4>📦 数据迁移</h4><p>检测到你此前在 <strong>http://</strong> 环境有数据，但当前 <strong>https://</strong> 环境是全新本地存储。</p><p style="font-size:11px;color:var(--t3)">Supabase 连接：${hasSb()?'✅ 正常':'❌ 失败'}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn btn-p" onclick="showModal()">+ 新建项目</button><button class="btn btn-s" onclick="expData()">💾 导出备份（在原环境操作）</button><button class="btn btn-s" onclick="showImpModal()">📥 导入备份</button></div></div>`;
+  }else if(!hasLocal){
+    diag=`<div class="migrate-card"><h4>📝 开始使用</h4><p>暂无项目数据。你可以新建项目或导入备份。</p><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-p" onclick="showModal()">+ 新建项目</button><button class="btn btn-s" onclick="showImpModal()">📥 导入备份</button></div></div>`;
+  }
+  return `<div class="empty"><h3>选择或新建项目</h3><p>左侧选择项目或点击下方按钮开始工作</p><br><button class="btn btn-p" onclick="showModal()">+ 新建项目</button>${diag}</div>`;
+}
+function showImpModal(){
+  const html=`<div class="modal show" id="impModal" style="z-index:300"><div class="mc" style="width:480px"><div class="mh">📥 导入数据备份</div><form onsubmit="event.preventDefault();doImport()"><div class="mb"><p style="font-size:12px;color:var(--t2);margin-bottom:12px">粘贴此前导出的 JSON 备份数据：</p><textarea id="impArea" style="width:100%;height:200px;font-family:monospace;font-size:11px;border:1px solid var(--b);border-radius:6px;padding:8px" placeholder="粘贴 JSON 数据..."></textarea></div><div class="ma"><button class="btn btn-s" type="button" onclick="document.getElementById('impModal').classList.remove('show')">取消</button><button class="btn btn-p" type="submit">导入</button></div></form></div></div>`;
+  if(!document.getElementById('impModal')){
+    const div=document.createElement('div');div.innerHTML=html;document.body.appendChild(div.firstElementChild);
+  }
+  document.getElementById('impModal').classList.add('show');
+}
+function doImport(){
+  try{
+    const raw=document.getElementById('impArea').value.trim();
+    if(!raw){T('请输入数据','warning');return}
+    const data=JSON.parse(raw);
+    if(data.projects){saveLocal(LS_PROJECTS,data.projects);projects=data.projects}
+    if(data.tasks){saveLocal(LS_TASKS,data.tasks);taskMap=data.tasks}
+    if(data.gates){saveLocal(LS_GATES,data.gates);gateMap=data.gates}
+    if(data.master)saveLocal('dqe_master',data.master);
+    if(data.riskKB){saveLocal(LS_RISK_KB,data.riskKB);if(data.riskKB.failureLib)failureLib=data.riskKB.failureLib;if(data.riskKB.fmeaRules)fmeaRules=data.riskKB.fmeaRules;if(data.riskKB.avoidChecks)avoidChecks=data.riskKB.avoidChecks}
+    T('导入成功：'+projects.length+' 个项目','success');
+    document.getElementById('impModal').classList.remove('show');
+    renderList();updateQuickBar();if(projects.length>0)selP(projects[0].id);
+  }catch(e){T('导入失败：'+e.message,'error')}
+}
+function expData(){
+  const data={
+    projects:loadLocal(LS_PROJECTS,[]),
+    tasks:loadLocal(LS_TASKS,{}),
+    gates:loadLocal(LS_GATES,{}),
+    master:loadLocal('dqe_master',[]),
+    riskKB:{failureLib:fmeaRules||[],fmeaRules:fmeaRules||[],avoidChecks:avoidChecks||[]},
+    exportedAt:new Date().toISOString(),from:location.origin
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='dqe_backup_'+dayjs().format('YYYYMMDD_HHmmss')+'.json';a.click();URL.revokeObjectURL(url);T('备份已导出','success');
+}
 function renderHome(p,ca){const ds=dqeStats(p),cp=getCurPhase(p),today=dayjs();const risks=countRisks(p),snap=getProjectSnapshot(p);
 let h=`<div class="sh-row"><h3>${E(p.name)}</h3><span class="badge b${Object.keys(PC).indexOf(cp.key)+1}">${cp.s}</span></div>`;
 // Stats row with drag/drop
@@ -2066,7 +2153,7 @@ document.getElementById('rpContent').innerHTML=h;document.getElementById('report
 function copyReminder(task,who){navigator.clipboard.writeText(`【催办】\n任务：${task}\n等待：${who}\n请尽快提供。谢谢！`).then(()=>T('已复制到剪贴板','success'))}
 
 // ======== Project CRUD ========
-async function exp(){const ep=[];for(const p of projects){let items={};Object.keys(taskMap).filter(k=>k.startsWith(p.id+'_')).forEach(k=>items[k]=taskMap[k]);ep.push({...p,_tasks:items})}const b=new Blob([JSON.stringify(ep,null,2)]);const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`dqe-${dayjs().format('YYYY-MM-DD')}.json`;a.click();T('已导出')}
+async function exp(){expData()}
 
 // ======== Init ========
 let _appInited=false;
