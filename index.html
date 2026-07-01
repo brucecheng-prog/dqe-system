@@ -293,6 +293,30 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 [data-theme="dark"] .migrate-card{background:#1a1d27}
 .migrate-card h4{margin:0 0 8px;color:var(--p);font-size:14px}
 .migrate-card p{margin:0 0 12px;font-size:12px;color:var(--t2)}
+/* 测试计划 Test Item */
+.test-item{display:flex;align-items:flex-start;padding:8px 10px;gap:10px;border-radius:6px;margin:2px 0;cursor:pointer;transition:background .15s;border:1px solid transparent}
+.test-item:hover{background:var(--s);border-color:var(--b)}
+.test-item.pass{border-left:3px solid #22c55e}
+.test-item.fail{border-left:3px solid #ef4444}
+.test-item.pending{border-left:3px solid #f59e0b}
+.test-item.na{border-left:3px solid #d1d5db}
+.ti-dot{font-size:16px;min-width:22px;text-align:center;line-height:1.4}
+.ti-content{flex:1;min-width:0}
+.ti-name{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ti-desc{font-size:10px;color:var(--t2);margin-top:2px}
+.ti-note{font-size:10px;color:#92400e;background:#fef3c7;padding:2px 6px;border-radius:3px;margin-top:3px;display:inline-block}
+.ti-issue{font-size:9px;color:var(--d);background:#fef2f2;padding:1px 6px;border-radius:3px;display:inline-block;cursor:pointer}
+.ti-req{font-size:9px;background:#e0e7ff;color:#4338ca;padding:1px 5px;border-radius:3px;font-weight:600}
+.ti-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
+/* Capability Domain */
+.cap-domain{margin-bottom:12px;border:1px solid var(--b);border-radius:8px;overflow:hidden}
+.cap-domain-h{font-size:12px;font-weight:700;padding:8px 12px;background:var(--s);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:6px}
+.dom-status{font-size:10px;padding:4px 12px;color:var(--t2)}
+/* Requirement ID Badge */
+.req-id-badge{background:#e0e7ff;color:#4338ca;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;font-family:monospace}
+.cap-tag{font-size:10px;background:#f0f0f5;padding:2px 6px;border-radius:3px}
+/* Evidence */
+.ev-thumb{width:40px;height:40px;border-radius:4px;background:var(--s);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
 </style></head>
 <body>
 <!-- 连接状态条 -->
@@ -342,7 +366,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 <div class="modal" id="modal"><div class="modc"><h4>新建项目</h4>
 <div class="fg"><label>选择项目编号</label><select id="pmaster" onchange="onMasterSelect()"><option value="">-- 选择已有项目 --</option></select> <button class="btn btn-xs btn-ghost" style="margin-top:4px" onclick="document.getElementById('pmaster').value='';document.getElementById('pname').value='';document.getElementById('pdate').value=dayjs().format('YYYY-MM-DD');document.getElementById('psup').value='';T('已切换到手动输入模式')">✎ 手动输入</button></div>
 <div class="fg"><label>项目名称</label><input id="pname" placeholder="例如：智能插座 DQE-001"></div>
-<div class="fg"><label>项目类型</label><select id="ptype" onchange="onTypeChange()"><option value="消费电子">消费电子</option><option value="无线产品">无线产品</option><option value="智能穿戴">智能穿戴</option><option value="小家电">小家电</option><option value="家居">家居</option><option value="自定义">自定义</option></select></div>
+<div class="fg"><label>项目类型</label><select id="ptype" onchange="onTypeChange()"><option value="消费电子">消费电子</option><option value="无线产品">无线产品</option><option value="智能穿戴">智能穿戴</option><option value="小家电">小家电</option><option value="电池">电池/电源</option><option value="服装">服装/纺织</option><option value="家居">家居</option><option value="自定义">自定义</option></select></div>
 <div class="fg"><label>供应商</label><input id="psup" placeholder="供应商名称"></div>
 <div class="fg"><label>启动日期</label><input type="date" id="pdate"></div>
 <div class="ma"><button class="btn btn-s" onclick="hideModal()">取消</button><button class="btn btn-p" onclick="create()">创建项目</button></div></div></div>
@@ -415,6 +439,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 <div class="modal" id="dvprModal"><div class="modc" style="width:520px;max-width:95vw"><h4>DVP&R 验证项</h4>
 <form onsubmit="event.preventDefault();saveDvprItem()">
 <input type="hidden" id="dvprIdx"><input type="hidden" id="dvprId">
+<div class="fg"><label>Requirement ID</label><input id="dvprReqId" placeholder="例如：REQ-XXXX001"></div>
 <div class="fg"><label>验证项目</label><input id="dvprItem" placeholder="例如：跌落测试 1.5m 6面4角"></div>
 <div class="fg"><label>规格/标准</label><input id="dvprSpec" placeholder="例如：IEC 60068-2-31"></div>
 <div class="fg"><label>样本数</label><input type="number" id="dvprSample" min="0" value="0" style="width:100px"></div>
@@ -443,6 +468,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microso
 <div id="issueContent"></div>
 <div class="fg"><label>更新状态</label><select id="issueStatus"><option value="Open">Open</option><option value="Analysis">Analysis</option><option value="Fix Pending">Fix Pending</option><option value="Verified">Verified</option><option value="Closed">Closed</option></select></div>
 <div class="ma"><button class="btn btn-s" onclick="document.getElementById('issueModal').classList.remove('show')">关闭</button><button class="btn btn-p" onclick="saveIssueStatus()">更新状态</button></div></div></div>
+
+<!-- Evidence Modal -->
+<div class="modal" id="evModal"><div class="modc" style="width:560px;max-width:95vw"><h4 id="evTitle">📎 证据附件</h4>
+<div id="evContent" style="max-height:60vh;overflow-y:auto"></div></div></div>
 
 <div class="toast" id="toast"></div>
 <div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:var(--t3);background:var(--s);padding:3px 8px;border-radius:4px;border:1px solid var(--b);opacity:.6;z-index:10">⌨ Ctrl+N 新建 · Ctrl+1~6 切Tab · Ctrl+K 搜索 · Esc 关闭</div>
@@ -608,7 +637,8 @@ const TEST_CAPABILITY_LIBRARY={
     {id:'mech_impact',name:'冲击测试',desc:'机械冲击耐受能力',method:'50g/11ms半正弦，6方向各3次'},
     {id:'mech_plug',name:'插拔寿命',desc:'连接器/接口插拔耐久性',method:'USB/DC/HDMI等接口5000次插拔，插拔力监测'},
     {id:'mech_bend',name:'弯折/扭转',desc:'线材/铰链/柔性件弯折耐久',method:'±90°弯折5000次，或按规格书要求'},
-    {id:'mech_ingress',name:'IP防护等级',desc:'防尘防水等级验证',method:'IEC 60529，IPX4-X7防水/IP5X-6X防尘'}
+    {id:'mech_ingress',name:'IP防护等级',desc:'防尘防水等级验证',method:'IEC 60529，IPX4-X7防水/IP5X-6X防尘'},
+    {id:'mech_abrasion',name:'耐磨/拉伸',desc:'面料/涂层/表面耐磨与拉伸强度',method:'ASTM D3884/ISO 12947马丁代尔法，5000-10000次'}
   ]},
   reliability:{domain:'可靠性',icon:'⏱',items:[
     {id:'rel_aging',name:'加速老化',desc:'高温高湿加速老化',method:'85°C/85%RH, 168h/500h，功能+外观检查'},
@@ -700,6 +730,26 @@ const PRODUCT_TEMPLATES={
       'pkg_ista','pkg_stack',
       'cert_rohs','cert_reach','cert_prop65',
       'mfg_dfm','mfg_process','mfg_first_article']
+  },
+  '电池':{
+    name:'电池/电源',desc:'锂电/铅酸/户外储能/充电设备',gates:{gate1:14,gate2:14,gate3:28,gate4:28,gate5:90},
+    capabilities:['func_power','func_led',
+      'elec_esd','elec_emc','elec_surge','elec_power','elec_leakage','elec_insulation',
+      'mech_drop','mech_vibration','mech_impact','mech_ingress',
+      'rel_aging','rel_thermal','rel_thermal_shock','rel_salt','rel_halt',
+      'env_high_temp','env_low_temp','env_humidity',
+      'pkg_ista','pkg_stack','pkg_label',
+      'cert_ul','cert_ce','cert_fcc','cert_rohs','cert_reach','cert_energy',
+      'mfg_dfm','mfg_process','mfg_first_article']
+  },
+  '服装':{
+    name:'服装/纺织',desc:'功能性服装/户外/防护',gates:{gate1:7,gate2:7,gate3:14,gate4:14,gate5:90},
+    capabilities:['mech_plug','mech_bend','mech_abrasion',
+      'rel_aging','rel_thermal','rel_uv',
+      'env_high_temp','env_humidity',
+      'pkg_ista','pkg_stack','pkg_label',
+      'cert_rohs','cert_reach','cert_prop65',
+      'mfg_dfm','mfg_process']
   },
   '自定义':{
     name:'自定义',desc:'手动选择测试能力',gates:{gate1:14,gate2:14,gate3:21,gate4:21,gate5:90},
@@ -1014,7 +1064,7 @@ async function loadEvtBuild(pid){if(!pid)return;const k=LS_BUILD+'_'+pid;evtBuil
 async function saveEvtBuild(pid){const k=LS_BUILD+'_'+pid;saveLocal(k,evtBuilds);if(hasSb()){try{await sb.from('evt_builds').delete().eq('project_id',pid);if(evtBuilds.length){const rows=evtBuilds.map(r=>({...r,project_id:pid}));await sb.from('evt_builds').insert(rows)}}catch(e){console.error(e)}}}
 async function loadDqIssues(){dqIssues=loadLocal(LS_ISSUES,[]);if(hasSb()){try{const{data}=await sb.from('dq_issues').select('*').order('created_at',{ascending:false});if(data&&data.length){dqIssues=data;saveLocal(LS_ISSUES,data)}}catch(e){}}}
 async function saveDqIssues(){saveLocal(LS_ISSUES,dqIssues);if(hasSb()){try{const rows=dqIssues.map(r=>({...r}));if(rows.length){await sb.from('dq_issues').upsert(rows)}}catch(e){console.error(e)}}}
-async function loadAllProjData(pid){await loadProjReqs(pid);await loadProjCaps(pid);await loadDvpr(pid);await loadEvtBuild(pid);await loadDqIssues();const p=gp();if(p&&Object.keys(projCaps).length===0&&PRODUCT_TEMPLATES[p.category||'自定义']){initProjCaps(p)}}
+async function loadAllProjData(pid){await loadProjReqs(pid);await loadProjCaps(pid);await loadDvpr(pid);await loadEvtBuild(pid);await loadDqIssues();loadEvidenceMap(pid);const p=gp();if(p&&Object.keys(projCaps).length===0&&PRODUCT_TEMPLATES[p.category||'自定义']){initProjCaps(p)}}
 
 // 获取项目启用的能力列表（含模板默认启用）
 function getEnabledCapIds(p){let ids=[];const tpl=PRODUCT_TEMPLATES[p.category||'自定义'];if(tpl)ids=[...tpl.capabilities];Object.entries(projCaps).forEach(([cid,c])=>{if(c.enabled&&!ids.includes(cid))ids.push(cid);else if(c.enabled===false)ids=ids.filter(x=>x!==cid)});return ids}
@@ -1435,74 +1485,182 @@ function closeDetail(){document.getElementById('detail').classList.remove('open'
 // ======== Gate3 设计验证管理 ========
 function switchG3Sub(i){g3SubTab=i;opd('gate3')}
 function renderGate3SubTabs(p){
-  const ts=PT['gate3'];
   let h=`<div class="g3-subtabs">`;
-  const tabs=['📋 RVM需求矩阵','⚡ EVT功能验证','📊 DVP&R执行','🔧 Build记录','🚦 Gate就绪'];
+  const tabs=['📋 RVM需求矩阵','📝 测试计划','📊 DVP&R执行','🔧 Build记录','🚦 Gate就绪'];
   tabs.forEach((t,i)=>{h+=`<div class="g3-st${g3SubTab===i?' ac':''}" onclick="switchG3Sub(${i})">${t}</div>`});
   h+=`</div>`;
   if(g3SubTab===0)h+=renderRVM(p);
-  else if(g3SubTab===1)h+=renderEVTFunc(p);
+  else if(g3SubTab===1)h+=renderTestPlan(p);
   else if(g3SubTab===2)h+=renderDVPR(p);
   else if(g3SubTab===3)h+=renderBuild(p);
   else if(g3SubTab===4)h+=renderGateReadiness(p);
-  // 保持原有DQE产出列表
-  h+=`<div class="sec" style="margin-top:16px"><div class="stitle">📤 DQE标准产出 (${ts.dl.filter((_,i)=>showAll||isDqeTask(p,'gate3',i)).length}项) <button class="btn btn-xs btn-s" onclick="viewArchive('gate3')">📂</button> <button class="btn btn-xs btn-s" onclick="showBatch()">☑</button></div>`;
-  ts.dl.forEach((item,i)=>{if(!showAll&&!isDqeTask(p,'gate3',i))return;const t=gtk(p,'gate3',i);const yc=item.y==='r'?'rp':item.y==='t'?'tt':item.y==='d'?'tc':'tr',yl=item.y==='r'?'报告':item.y==='t'?'测试':item.y==='d'?'标准':'评审',rc=t.risk_status==='red'?'r':t.risk_status==='yellow'?'y':'g',tpl=TM['gate3']&&TM['gate3'][i],isDQE=isDqeTask(p,'gate3',i),g=getTaskGuide('gate3',i);
-  h+=`<div class="ti"><input type="checkbox" style="cursor:pointer;accent-color:var(--p)" onclick="event.stopPropagation();toggleBatch('gate3',${i})"><div class="chk${t.completed?' done':''}" title="${t.completed?'点击可撤销完成':'点击标记完成'}" onclick="toggleCheck('gate3',${i})"></div><span class="rd ${rc}" onclick="event.stopPropagation();openRisk('gate3',${i})"></span><div style="flex:1;min-width:0"><div class="tnm">${E(item.t)} <span class="tag tag-${yc}">${yl}</span><span class="tag" style="background:#eef6ff;color:#2563eb">${E(g.phase)}</span>${t.completed?' ✓':''}${t.waiting_status?' ⏳':''}${!isDQE?` <span style="font-size:8px;color:var(--t3)">[${(t.task_role||'DQE')}]</span>`:''}</div>${renderTaskGuideLines(g)}</div>${tpl&&isDQE?`<a href="templates/${getTplFile(tpl)}" target="_blank" style="text-decoration:none"><span class="tag" style="background:#fffbeb;color:#b45309">📋${tpl}</span></a>`:''}${isDQE?`<button class="btn btn-xs btn-s" onclick="event.stopPropagation();uploadFile('gate3',${i})">📤</button>`:''}</div>`});
-  h+=`</div>`;
   return h;
 }
 
 // ======== RVM: Requirement Verification Matrix ========
 function renderRVM(p){
-  let h=`<div class="card"><div class="card-h">📋 Requirement Verification Matrix · 需求验证矩阵<button class="btn btn-xs btn-p" onclick="addRequirement()">+ 新增需求</button></div>`;
-  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:8px">从PRD/规格书导入需求，每条需求映射到测试验证方式</div>`;
-  if(!projReqs.length){h+=`<div class="sec-empty">暂无需求 · 点击「+ 新增需求」导入PRD中的规格要求</div></div>`;return h}
-  h+=`<div style="overflow-x:auto"><table class="rvm-table"><thead><tr><th style="width:30px">#</th><th>需求/规格</th><th>来源</th><th>验证方式</th><th>关联测试</th><th>结果</th><th style="width:50px"></th></tr></thead><tbody>`;
+  let h=`<div class="card"><div class="card-h">📋 Requirement Verification Matrix · 需求验证矩阵<button class="btn btn-xs btn-p" onclick="addRequirement()">+ 新增需求</button><button class="btn btn-xs btn-s" onclick="importPrdReqs()" style="margin-left:4px">📥 导入</button></div>`;
+  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:8px">从PRD/规格书导入需求，每条需求通过<strong>Requirement ID</strong>关联验证方式和测试证据</div>`;
+  if(!projReqs.length){h+=`<div class="sec-empty">暂无需求 · 点击「+ 新增需求」或「📥 导入」从PRD批量导入需求条目</div></div>`;return h}
+  h+=`<div style="overflow-x:auto"><table class="rvm-table"><thead><tr><th style="width:70px">Req ID</th><th>需求/规格</th><th>来源</th><th>验证方式</th><th>关联测试</th><th>结果</th><th>证据</th><th style="width:50px"></th></tr></thead><tbody>`;
   projReqs.forEach((r,i)=>{
     const cap=r.cap_id?findCap(r.cap_id):null;
     const statusCls=r.result==='Pass'?'status-pass':r.result==='Fail'?'status-fail':'status-pending';
-    h+=`<tr><td>${i+1}</td><td><strong>${E(r.requirement)}</strong></td><td>${E(r.source||'PRD')}</td><td>${E(r.verify_method||'测试验证')}</td><td>${cap?`<span style="font-size:10px;background:#f0f0f5;padding:2px 6px;border-radius:3px">${cap.name}</span>`:'<span style="color:var(--t3)">未关联</span>'}</td><td><span class="${statusCls}">${r.result||'Pending'}</span>${r.issue_id?` <span style="font-size:9px;color:var(--d);cursor:pointer" onclick="viewIssue('${r.issue_id}')">🔗#${r.issue_id.slice(-6)}</span>`:''}</td><td><button class="btn btn-xs btn-s" onclick="editRequirement(${i})">✎</button></td></tr>`
+    const hasEv=hasEvidence('req',r.id||r.req_id||'');
+    h+=`<tr>
+      <td><span class="req-id-badge">REQ-${(r.req_id||r.id||'').slice(-6)}</span></td>
+      <td><strong>${E(r.requirement)}</strong></td>
+      <td>${E(r.source||'PRD')}</td>
+      <td>${E(r.verify_method||'测试验证')}</td>
+      <td>${cap?`<span class="cap-tag">${cap.name}</span>`:'<span style="color:var(--t3);font-size:10px">未关联</span>'}</td>
+      <td><span class="${statusCls}">${r.result||'Pending'}</span>${r.issue_id?` <span style="font-size:9px;color:var(--d);cursor:pointer" onclick="viewIssue('${r.issue_id}')">🔗#${r.issue_id.slice(-6)}</span>`:''}</td>
+      <td>${hasEv?`<span style="font-size:11px;cursor:pointer" onclick="openEvidence('req','${r.id||r.req_id}','需求-${(r.req_id||r.id||'').slice(-6)}')">📎</span>`:`<span style="font-size:11px;color:var(--t3);cursor:pointer" onclick="openEvidence('req','${r.id||r.req_id}','需求-${(r.req_id||r.id||'').slice(-6)}')">+</span>`}</td>
+      <td><button class="btn btn-xs btn-s" onclick="editRequirement(${i})">✎</button></td>
+    </tr>`
   });
   h+=`</tbody></table></div></div>`;
   return h;
 }
 
-// ======== EVT Functional Verification ========
-function renderEVTFunc(p){
-  let h=`<div class="card"><div class="card-h">⚡ EVT Functional Verification · 功能验证<button class="btn btn-xs btn-p" onclick="bulkLoadEVT()">📥 快速加载清单</button></div>`;
-  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:8px">覆盖开关机、按键、通信、显示、OTA等基础功能验证</div>`;
-  const funcIds=['func_power','func_button','func_ble','func_lora','func_gps','func_screen','func_led','func_ota','func_audio','func_sensor'];
-  const enabled=funcIds.filter(id=>isCapEnabled(p.id,id));
-  if(!enabled.length){h+=`<div class="sec-empty">请先在「测试能力库」中启用功能验证项</div></div>`;return h}
-  h+=`<div class="func-grid">`;
-  enabled.forEach(cid=>{
-    const cap=findCap(cid),st=getCapState(cid);
-    const cls=st.completed?(st.result==='Pass'?'ok':st.result==='Fail'?'ng':'ok'):'na';
-    const icon=st.completed?(st.result==='Pass'?'✅':st.result==='Fail'?'❌':'✅'):'○';
-    h+=`<div class="func-item" onclick="toggleFuncResult('${cid}')">
-      <div class="func-st ${cls}">${icon}</div>
-      <div class="func-info"><div class="func-name">${cap?cap.name:cid}</div><div class="func-note">${st.notes||(cap?cap.desc:'')}</div></div>
-      ${st.issue_id?`<span style="font-size:10px;color:var(--d);cursor:pointer" onclick="event.stopPropagation();viewIssue('${st.issue_id}')">🔗</span>`:''}
-    </div>`
+function importPrdReqs(){
+  const raw=prompt('粘贴PRD中的需求条目（每行一条）：','');if(!raw||!raw.trim())return;
+  const p=gp();if(!p)return;
+  const lines=raw.split('\n').filter(l=>l.trim());
+  lines.forEach(line=>{
+    const reqId='REQ_'+Date.now().toString(36).toUpperCase()+'_'+Math.random().toString(36).slice(2,6).toUpperCase();
+    projReqs.push({id:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),req_id:reqId,requirement:line.trim(),source:'PRD',verify_method:'',cap_id:'',result:'Pending',issue_id:'',created_at:dayjs().format()});
   });
-  h+=`</div></div>`;
+  saveProjReqs(p.id);
+  g3SubTab=0;opd('gate3');T(`✅ 已导入 ${lines.length} 条需求`,'success');
+}
+
+// ======== 测试计划：基于产品模板+能力库自动生成 ========
+function renderTestPlan(p){
+  const tpl=PRODUCT_TEMPLATES[p.category||'自定义']||PRODUCT_TEMPLATES['自定义'];
+  let h=`<div class="card"><div class="card-h">📝 测试计划 · Test Plan<button class="btn btn-xs btn-p" onclick="addDvprItem()">+ 自定义项</button><button class="btn btn-xs btn-s" onclick="autoGenTests()">🔄 按模板生成</button></div>`;
+  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:4px">品类：<strong>${tpl.name}</strong> · ${tpl.description} · 已启用 ${Object.values(projCaps).filter(c=>c.enabled).length} 项能力</div>`;
+  // 按域分组显示
+  Object.values(TEST_CAPABILITY_LIBRARY).forEach(dom=>{
+    const items=dom.items.filter(it=>isCapEnabled(p.id,it.id));
+    if(!items.length)return;
+    let domainAllPass=true,domainHasFail=false;
+    h+=`<div class="cap-domain"><div class="cap-domain-h">${dom.icon} ${dom.name} <span style="font-size:10px;color:var(--t2);font-weight:400">(${items.length}项)</span></div>`;
+    items.forEach(it=>{
+      const st=getCapState(it.id);
+      const reqId=findReqByCap(it.id);
+      const openEv=hasEvidence('cap',it.id);
+      if(!st.completed)domainAllPass=false;
+      if(st.result==='Fail')domainHasFail=true;
+      const statusIcon=st.completed?(st.result==='Pass'?'✅':st.result==='Fail'?'❌':'🔵'):'○';
+      const statusCls=st.completed?(st.result==='Pass'?'pass':st.result==='Fail'?'fail':'pending'):'na';
+      h+=`<div class="test-item ${statusCls}" onclick="toggleCapResult('${it.id}')">
+        <div class="ti-dot">${statusIcon}</div>
+        <div class="ti-content">
+          <div class="ti-name">${it.name} <span class="ti-req">${reqId?`REQ-${reqId}`:''}</span>${openEv?` <span style="font-size:9px;color:var(--p)">📎证据</span>`:''}</div>
+          <div class="ti-desc">${it.desc} · 标准：${it.method||'企标'}</div>
+          ${st.notes?`<div class="ti-note">📝 ${E(st.notes)}</div>`:''}
+          ${st.issue_id?`<div class="ti-issue" onclick="event.stopPropagation();viewIssue('${st.issue_id}')">🔗 Issue #${st.issue_id.slice(-8)}</div>`:''}
+        </div>
+        <div class="ti-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-xs btn-s" onclick="openEvidence('cap','${it.id}','${it.name}')" title="证据附件">📎</button>
+          <button class="btn btn-xs btn-s" onclick="setCapNotes('${it.id}')" title="添加备注">✏️</button>
+        </div>
+      </div>`;
+    });
+    const domStatus=!domainHasFail&&domainAllPass?'🟢':domainHasFail?'🔴':'🟡';
+    h+=`<div class="dom-status">${domStatus} ${domainAllPass&&!domainHasFail?'全部通过':domainHasFail?'存在失败项':'待验证'}</div></div>`;
+  });
+  if(!Object.values(TEST_CAPABILITY_LIBRARY).some(dom=>dom.items.some(it=>isCapEnabled(p.id,it.id))))h+=`<div class="sec-empty">⚠️ 该项目尚未启用任何测试能力<br><button class="btn btn-s" onclick="autoGenTests()" style="margin-top:8px">🔄 按产品模板自动生成</button></div>`;
+  h+=`</div>`;
   return h;
 }
 
+function autoGenTests(){
+  const p=gp();if(!p)return;
+  const tpl=PRODUCT_TEMPLATES[p.category||'自定义']||PRODUCT_TEMPLATES['自定义'];
+  tpl.capabilities.forEach(cid=>{
+    if(!projCaps[cid]||!projCaps[cid].enabled){projCaps[cid]={enabled:true,result:'',notes:'',issue_id:null,completed:false}}
+  });
+  saveProjCaps(p.id);
+  opd('gate3');T('✅ 已按模板生成测试计划','success');
+}
+
+function toggleCapResult(cid){
+  const st=getCapState(cid);const p=gp();if(!p)return;
+  // 循环：Pending -> Pass -> Fail -> Pending
+  if(!st.completed||st.result===''){projCaps[cid].completed=true;projCaps[cid].result='Pass';projCaps[cid].issue_id=null}
+  else if(st.result==='Pass'){projCaps[cid].completed=true;projCaps[cid].result='Fail';projCaps[cid].issue_id='ISS_'+Date.now().toString(36).toUpperCase();projCaps[cid].notes='测试失败，自动生成Issue'}
+  else{projCaps[cid].completed=false;projCaps[cid].result='';projCaps[cid].issue_id=null;projCaps[cid].notes=''}
+  saveProjCaps(p.id);
+  // 同步生成Issue记录
+  if(projCaps[cid].issue_id){
+    const cap=findCap(cid);
+    dqIssues.unshift({id:projCaps[cid].issue_id,project_id:p.id,title:`测试失败：${cap?cap.name:cid}`,source:'capability',source_id:cid,status:'Open',severity:'Major',created_at:new Date().toISOString()});
+    saveDqIssues();
+  }
+  g3SubTab=1;opd('gate3');
+}
+
+function setCapNotes(cid){const n=prompt('输入备注：',projCaps[cid]?.notes||'');if(n!==null){projCaps[cid].notes=n;saveProjCaps(gp().id);g3SubTab=1;opd('gate3')}}
+
+function findReqByCap(capId){const r=projReqs.find(r=>r.cap_id===capId);return r?(r.req_id||r.id||'').slice(-6):''}
+
+// ======== Evidence 证据附件系统 ========
+const LS_EVIDENCE='dqe_evidence';
+let evidenceMap={};
+function loadEvidenceMap(pid){const k=LS_EVIDENCE+'_'+pid;evidenceMap=loadLocal(k,{});return evidenceMap}
+function saveEvidenceMap(pid){const k=LS_EVIDENCE+'_'+pid;saveLocal(k,evidenceMap)}
+function evKey(type,id){return type+'_'+id}
+function hasEvidence(type,id){const k=evKey(type,id);return !!(evidenceMap[k]&&evidenceMap[k].length)}
+function getEvidence(type,id){const k=evKey(type,id);return evidenceMap[k]||[]}
+function openEvidence(type,id,label){
+  const p=gp();if(!p)return;
+  const ev=getEvidence(type,id);
+  let h=`<div class="card"><div class="card-h">📎 证据附件 · ${E(label)}</div>`;
+  if(!ev.length)h+=`<div class="sec-empty">暂无证据附件</div>`;
+  else{ev.forEach((e,i)=>{h+=`<div style="display:flex;align-items:center;padding:6px 0;gap:8px;border-bottom:1px solid var(--b)">
+    <span style="font-size:20px">${e.type==='image'?'🖼️':e.type==='video'?'🎬':e.type==='log'?'📋':'📄'}</span>
+    <span style="flex:1;font-size:12px">${E(e.name)}</span>
+    <span style="font-size:10px;color:var(--t2)">${E(e.type)} · ${fs(e.size||0)}</span>
+    <button class="btn btn-xs btn-s" onclick="viewEvidence('${type}','${id}',${i})">👁️</button>
+    <button class="btn btn-xs btn-s" style="color:var(--d)" onclick="removeEvidence('${type}','${id}',${i})">✕</button>
+  </div>`})}
+  h+=`</div><div style="margin-top:8px"><input type="file" id="evFileInput" multiple accept="image/*,video/*,.log,.txt,.csv,.xlsx,.xls,.pdf,.doc,.docx" style="font-size:11px" onchange="uploadEvidence('${type}','${id}')"></div>`;
+  h+=`<div style="margin-top:8px;text-align:right"><button class="btn btn-s" onclick="hideEvidenceModal()">关闭</button></div>`;
+  document.getElementById('evContent').innerHTML=h;
+  document.getElementById('evModal').classList.add('show');
+}
+function hideEvidenceModal(){document.getElementById('evModal').classList.remove('show')}
+function uploadEvidence(type,id){
+  const p=gp();if(!p)return;
+  const input=document.getElementById('evFileInput');if(!input||!input.files.length)return;
+  const k=evKey(type,id);if(!evidenceMap[k])evidenceMap[k]=[];
+  Array.from(input.files).forEach(file=>{
+    evidenceMap[k].push({name:file.name,type:file.type.includes('image')?'image':file.type.includes('video')?'video':file.name.endsWith('.log')||file.name.endsWith('.txt')?'log':'file',size:file.size,added_at:dayjs().format()});
+  });
+  saveEvidenceMap(p.id);
+  openEvidence(type,id,'更新后');
+  T('✅ 证据已上传','success');
+}
+function removeEvidence(type,id,idx){const p=gp();if(!p)return;const k=evKey(type,id);if(evidenceMap[k]){evidenceMap[k].splice(idx,1);saveEvidenceMap(p.id);openEvidence(type,id,'更新后');T('已删除','success')}}
+function viewEvidence(type,id,idx){const ev=getEvidence(type,id);if(!ev[idx])return;T('📄 '+ev[idx].name+' · '+fs(ev[idx].size||0)+' · '+ev[idx].type,'success')}
+
 // ======== DVP&R Execution ========
 function renderDVPR(p){
-  let h=`<div class="card"><div class="card-h">📊 DVP&R Execution · 设计验证计划与报告执行<button class="btn btn-xs btn-p" onclick="addDvprItem()">+ 新增项</button></div>`;
-  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:8px">按测试域记录每个验证项的规格、样本数、结果和Issue</div>`;
-  if(!dvprData.length){h+=`<div class="sec-empty">暂无DVP&R执行记录 · 点击「+ 新增项」开始记录</div></div>`;return h}
-  h+=`<div class="dvpr-grid"><div class="dvpr-row header"><span>验证项目</span><span>规格/标准</span><span>样本数</span><span>结果</span><span>Issue/备注</span><span></span></div>`;
+  let h=`<div class="card"><div class="card-h">📊 DVP&R Execution · 设计验证计划与报告执行<button class="btn btn-xs btn-p" onclick="addDvprItem()">+ 新增项</button><button class="btn btn-xs btn-s" onclick="autoGenTests()" style="margin-left:4px">🔄 同步计划</button></div>`;
+  h+=`<div style="font-size:11px;color:var(--t2);margin-bottom:8px">每个验证项关联 Requirement ID，记录执行结果、Issue和证据附件</div>`;
+  if(!dvprData.length){h+=`<div class="sec-empty">暂无DVP&R执行记录 · 点击「+ 新增项」或「🔄 同步计划」从测试计划生成</div></div>`;return h}
+  h+=`<div class="dvpr-grid"><div class="dvpr-row header"><span>Req ID</span><span>验证项目</span><span>规格/标准</span><span>样本数</span><span>结果</span><span>Issue</span><span>证据</span><span></span></div>`;
   dvprData.forEach((r,i)=>{
+    const hasEv=hasEvidence('dvpr',r.id||'');
     h+=`<div class="dvpr-row">
+      <span class="req-id-badge" style="font-size:9px">${E(r.req_id||'-')}</span>
       <span style="font-weight:500">${E(r.item||'')}</span>
       <span style="font-size:10px;color:var(--t2)">${E(r.spec||'')}</span>
       <span>${r.sample_count||'-'}pcs</span>
       <span><strong style="color:${r.result==='Pass'?'#16a34a':r.result==='Fail'?'#dc2626':'#9499a3'}">${r.result||'Pending'}</strong></span>
-      <span style="font-size:10px">${E(r.notes||'')}${r.issue_id?` <span style="color:var(--d);cursor:pointer" onclick="viewIssue('${r.issue_id}')">#${r.issue_id.slice(-6)}</span>`:''}</span>
+      <span style="font-size:10px;color:var(--d);cursor:pointer">${r.issue_id?`<span onclick="viewIssue('${r.issue_id}')">#${r.issue_id.slice(-8)}</span>`:`-`}</span>
+      <span style="font-size:11px;cursor:pointer" onclick="openEvidence('dvpr','${r.id}','${r.item}')">${hasEv?'📎':'+'}</span>
       <span><button class="btn btn-xs btn-s" onclick="editDvprItem(${i})">✎</button></span>
     </div>`;
   });
@@ -1639,6 +1797,7 @@ function hideReqModal(){document.getElementById('reqModal').classList.remove('sh
 function showDvprModal(idx,r){
   document.getElementById('dvprIdx').value=idx;
   document.getElementById('dvprId').value=r.id||('dvpr_'+Date.now());
+  document.getElementById('dvprReqId').value=r.req_id||'';
   document.getElementById('dvprItem').value=r.item||'';
   document.getElementById('dvprSpec').value=r.spec||'';
   document.getElementById('dvprSample').value=r.sample_count||0;
@@ -2072,7 +2231,7 @@ async function saveRequirement(){const idx=parseInt(document.getElementById('req
 // DVP&R CRUD
 function addDvprItem(){const r={id:'dvpr_'+Date.now(),item:'',spec:'',sample_count:0,result:'Pending',notes:'',issue_id:null};showDvprModal(-1,r)}
 function editDvprItem(idx){showDvprModal(idx,{...dvprData[idx]})}
-async function saveDvprItem(){const idx=parseInt(document.getElementById('dvprIdx').value);const r={id:document.getElementById('dvprId').value,item:document.getElementById('dvprItem').value.trim(),spec:document.getElementById('dvprSpec').value.trim(),sample_count:parseInt(document.getElementById('dvprSample').value)||0,result:document.getElementById('dvprResult').value,notes:document.getElementById('dvprNotes').value.trim(),issue_id:document.getElementById('dvprIssue').value||null};if(!r.item){T('请输入验证项目');return}if(r.result==='Fail'&&!r.issue_id){r.issue_id='issue_'+Date.now()}if(idx<0)dvprData.push(r);else dvprData[idx]=r;await saveDvpr(gp().id);hideDvprModal();opd('gate3');T('✅ 已保存','success')}
+async function saveDvprItem(){const idx=parseInt(document.getElementById('dvprIdx').value);const r={id:document.getElementById('dvprId').value,req_id:document.getElementById('dvprReqId').value.trim()||null,item:document.getElementById('dvprItem').value.trim(),spec:document.getElementById('dvprSpec').value.trim(),sample_count:parseInt(document.getElementById('dvprSample').value)||0,result:document.getElementById('dvprResult').value,notes:document.getElementById('dvprNotes').value.trim(),issue_id:document.getElementById('dvprIssue').value||null};if(!r.item){T('请输入验证项目');return}if(r.result==='Fail'&&!r.issue_id){r.issue_id='ISS_'+Date.now().toString(36).toUpperCase()}if(idx<0)dvprData.push(r);else dvprData[idx]=r;await saveDvpr(gp().id);hideDvprModal();opd('gate3');T('✅ 已保存','success')}
 
 // Build CRUD
 function addBuild(){const b={id:'build_'+Date.now(),pcb_ver:'',fw_ver:'',bom_ver:'',sample_count:0,build_date:dayjs().format('YYYY-MM-DD'),conclusion:'Pending',notes:'',issue_id:null};showBuildModal(-1,b)}
